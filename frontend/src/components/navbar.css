@@ -1,0 +1,33 @@
+/* navbar.css */
+
+.navbar {
+    background-color: #dac6bd7e;
+  }
+  
+  .navbar-brand {
+    font-weight: bold;
+  }
+  
+  .nav-link {
+    font-weight: bold;
+
+    color: #ae670a;
+  }
+  
+  .nav-link.active {
+    font-weight: bold;
+  }
+
+  
+#username {
+  color: #dc8449;
+}
+#profile {
+  color: #dc8449;
+}
+#logout {
+  color: #bb0606;
+
+}
+  /* Add more custom styles as needed */
+  

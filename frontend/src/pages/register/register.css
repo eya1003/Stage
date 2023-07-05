@@ -4,7 +4,7 @@
     background-color: rgba(255, 255, 255, 0.03);
     position: absolute;
     transform: translate(-50%, -50%);
-    top: 50%;
+    top: 42%;
     left: 50%;
     border-radius: 10px;
     backdrop-filter: blur(15px);
@@ -13,7 +13,6 @@
     padding: 50px 35px;
     margin-top: 50px;
     align-items: center;
-  
   }
   .fontcenter{
     margin-left: 140px;
@@ -21,7 +20,7 @@
   
   }
   .marginTops{
-    margin-top: 200px;
+    margin-top: 50px;
     align-items: center;
   }
   .h111{
@@ -39,10 +38,6 @@
   }
   .register > .Button {
     margin-top: -20px;
-  
-  
-  
-  
   }
   
   @media (max-width: 767px) {
@@ -59,7 +54,7 @@
     height: 15px;
     width: 15px;
     margin: 0 2px;
-    background-color: #bbbbbb;
+    background-color: #060400;
     border: none;
     border-radius: 50%;
     display: inline-block;
@@ -79,7 +74,7 @@
     margin-top: -50px;
   }
   .register * {
-    color: #ffffff;
+    color: #DEB887;
     letter-spacing: 0.5px;
     outline: none;
     border: none;
@@ -147,14 +142,14 @@
     display: block;
     height: 50px;
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(227, 169, 10, 0.05);
     border-radius: 3px;
     padding: 0 10px;
     margin-top: 8px;
     font-size: 14px;
   }
   ::placeholder {
-    color: #e1e1e1;
+    color: #f3dbbc;
   }
   
   .register > input:hover{
@@ -163,7 +158,7 @@
   .register > button {
     margin-top: 50px;
     width: 100%;
-    background-color: #ffffff;
+    background-color: #DEB887;
     color: #080710;
     padding: 15px 0;
     font-size: 18px;

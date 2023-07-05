@@ -1,21 +1,15 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/sidebar';
 
 const Dashboard = () => {
   return (
-    <>
-      <Navbar />
-      <div className="container-fluid">
-        <div className="row">
-          <Sidebar />
-          <main className="col-md-9 ml-sm-auto col-lg-10 px-md-4">
-            {/* Your dashboard content goes here */}
-            <h1>Dashboard Page</h1>
-          </main>
-        </div>
+    <div className="dashboard">
+      <div className="dashboard-content">
+          <h1>Dashboard Page</h1>
+          <h3>just for test</h3>
+          {/* Add more content here */}
       </div>
-    </>
+    </div>
   );
 };
 

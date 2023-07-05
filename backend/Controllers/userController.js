@@ -14,8 +14,6 @@ const registerUser = asynHandler( async ( req , res )=> {
         lastName , 
         email , 
         password , 
-        cin  ,
-        dateOfBirth , 
         phone 
     } = req.body
     const  imageUrl =req.file?
@@ -46,8 +44,6 @@ const registerUser = asynHandler( async ( req , res )=> {
         email , 
         imageUrl,
         password: headPassword  , 
-        cin ,
-        dateOfBirth ,
         phone,
         role: {name: "userRole"},
         emailToken: otp,  
@@ -121,8 +117,6 @@ const registerUser = asynHandler( async ( req , res )=> {
            lastName: user.lastName,
            phone: user.phone,
            email: user.email,
-           cin: user.cin,
-           dateOfBirth: user.dateOfBirth,
            role : user.role,    
            verfication : user.emailToken,
            imageUrl: user.imageUrl,
@@ -228,12 +222,10 @@ const logIn = asynHandler( async (req,res)=>{
           lastName: user.lastName,
           imageUrl: user.imageUrl,
           phone: user.phone,
-          cin: user.cin,
           role : user.role, 
           verify : user.verify,
           password: user.password, 
           bloque : user.bloque, 
-          dateOfBirth : user.dateOfBirth, 
           token: generateToken(user._id)
       })
       

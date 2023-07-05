@@ -10,6 +10,7 @@ import Product from './pages/Product.jsx';
 import ProductList from './pages/ProductList.jsx';
 import Navbar from './components/navbar';
 import Login from './pages/login/login';
+import Register from './pages/register/register';
 
 function App() {
   return (
@@ -18,12 +19,14 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email/:emailToken" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<> <Navbar />    <Sidebar /> <Dashboard/> </>} />
       <Route path="/about" element={<About />} />
       <Route path="/comment" element={<Comment />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/product" element={<Product />} />
       <Route path="/productList" element={<ProductList />} />
+      <Route path="/register" element={<Register />} />
+
     </Routes>
   </BrowserRouter>
       );

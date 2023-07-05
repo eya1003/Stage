@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button } from 'react-bootstrap';
 import { login } from '../../userRedux/userActions';
-
+import "./login.css"
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -59,7 +59,7 @@ const Login = () => {
             Sign In
           </Button>
 
-          <Link to="/">New Customer? Register</Link>
+          <Link to="/register">New Customer? Register</Link>
         </form>
       </div>
     </>

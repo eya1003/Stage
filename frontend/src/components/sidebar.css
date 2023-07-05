@@ -1,0 +1,27 @@
+.sidebar {
+    width: 200px;
+    background-color: #e0d4cc;
+    width: 200px;
+  height: 100vh;
+  padding: 20px;
+  }
+  
+  .sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sidebar-item {
+    margin-bottom: 10px;
+  }
+  
+  .sidebar-link {
+    color: #000;
+    text-decoration: none;
+  }
+  
+  .sidebar-link:hover {
+    color: #957442;
+  }
+  
