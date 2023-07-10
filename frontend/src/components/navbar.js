@@ -23,6 +23,7 @@ const Navbar = () => {
     navigate("/login");
 }
   return (
+    
     <nav className="navbar navbar-expand-lg navbar-light bg-custom">
       <div className="container">
         <Link to="/" className="navbar-brand">Logo</Link>
@@ -66,15 +67,12 @@ const Navbar = () => {
                     >
 
                 </lord-icon>
-                                      
-                       
                         </LinkContainer>
                         <LinkContainer  to='/userupdate'>
                             <NavDropdown.Item id="profile" > UPDATE PROFILE</NavDropdown.Item>
                         </LinkContainer>
                         <NavDropdown.Item id="logout" onClick={logoutHandler} >LOGOUT</NavDropdown.Item>
                     </NavDropdown>  </div>
-            
             )  : 
             <Link className="nav_links" to={"/login"} >
                 SIGNIN

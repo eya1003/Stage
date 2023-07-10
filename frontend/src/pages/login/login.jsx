@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Button } from 'react-bootstrap';
 import { login } from '../../userRedux/userActions';
@@ -8,7 +8,7 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userLogin = useSelector((state) => state.userLogin);
-  const { loading, error, userInfo } = userLogin;
+  const { loading, errorLogin, userInfo } = userLogin;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +17,15 @@ const Login = () => {
     e.preventDefault();
     dispatch(login(email, password));
   };
+
+  const location = useLocation();
+const error = location.state?.error;
+
+// Render the error message if it exists
+{error && (
+  <div className="alert">{error}</div>
+)}
+
 
   useEffect(() => {
     if (userInfo && userInfo.verify) {

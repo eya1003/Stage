@@ -1,7 +1,7 @@
 /* navbar.css */
 
 .navbar {
-    background-color: #dac6bd7e;
+    background-color: #42a2eb;
   }
   
   .navbar-brand {
@@ -11,7 +11,7 @@
   .nav-link {
     font-weight: bold;
 
-    color: #ae670a;
+    color: #f4f2ee;
   }
   
   .nav-link.active {
@@ -20,13 +20,13 @@
 
   
 #username {
-  color: #dc8449;
+  color: #eee9e5;
 }
 #profile {
-  color: #dc8449;
+  color: #eae4df;
 }
 #logout {
-  color: #bb0606;
+  color: #bb0606; 
 
 }
   /* Add more custom styles as needed */

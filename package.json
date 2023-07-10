@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.10.3",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "cookie-session": "^2.0.0",
@@ -21,6 +22,7 @@
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "font-awesome": "^4.7.0",
+    "ibmmq": "^2.0.1",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.9.2",
     "morgan": "^1.10.0",

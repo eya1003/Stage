@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { USER_LOGIN_FAIL, USER_LOGIN_REQUEST, USER_LOGIN_SUCCESS, USER_LOGOUT, USER_REGISTER_FAIL, USER_REGISTER_REQUEST, USER_REGISTER_SUCCESS, USER_VERIFY_FAIL, USER_VERIFY_REQUEST, USER_VERIFY_SUCCESS } from './userConstants';
+import { GET_USERS_FAILURE, GET_USERS_REQUEST, GET_USERS_SUCCESS, USER_LOGIN_FAIL, USER_LOGIN_REQUEST, USER_LOGIN_SUCCESS, USER_LOGOUT, USER_REGISTER_FAIL, USER_REGISTER_REQUEST, USER_REGISTER_SUCCESS, USER_VERIFY_FAIL, USER_VERIFY_REQUEST, USER_VERIFY_SUCCESS } from './userConstants';
 
 /* 
 export const login = (email,password) => async (dispatch)=>{
@@ -169,6 +169,26 @@ export const verifyEmail = (emailToken) => async (dispatch)=>{
 
   }
 
+  export const getUsers = () => async (dispatch) => {
+    try {
+      dispatch({ type: GET_USERS_REQUEST });
+  
+      const response = await fetch('http://localhost:5000/user/allUser', {
+        method: 'GET',
+        headers: {
+          accept: 'multipart/form-data',
+        },
+      });
+  
+      const data = await response.json();
+  
+      dispatch({ type: GET_USERS_SUCCESS, payload: data });
+    } catch (error) {
+      dispatch({ type: GET_USERS_FAILURE, payload: error });
+      console.log(error);
+    }
+  };
+  
 
 
  

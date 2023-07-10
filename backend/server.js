@@ -6,9 +6,10 @@ const morgan = require('morgan')
 const cors = require('cors');
 const cookieSession = require('cookie-session');
 const passport = require('passport')
-const passportSetUp=require('./passport.js')
+
 //connect database
 mongodb() 
+
 
 const app =express()
 const server = require('http').createServer(app);
@@ -57,6 +58,8 @@ io.on('connection', (socket)=> {
 app.use(express.urlencoded({extended : false}))
 app.use('/auth',require('./Routes/auth.js'));
 app.use('/user',require('./Routes/userRoute.js'));
+app.use('/qu',require('./Routes/queueRoute.js'));
+
 
 
 

@@ -8,7 +8,7 @@
     left: 50%;
     border-radius: 10px;
     backdrop-filter: blur(15px);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(65, 59, 59, 0.1);
     box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
     padding: 50px 35px;
   
@@ -22,7 +22,7 @@
     height: 15px;
     width: 15px;
     margin: 0 2px;
-    background-color: #bbbbbb;
+    background-color: #463f3f;
     border: none;
     border-radius: 50%;
     display: inline-block;
@@ -42,7 +42,7 @@
     margin-top: -50px;
   }
   .login * {
-    color: #CD853F;
+    color: #050608;
     letter-spacing: 0.5px;
     outline: none;
     border: none;
@@ -84,17 +84,17 @@
     font-size: 14px;
   }
   ::placeholder {
-    color: #DEB887;
+    color: #e0dcd4;
   }
   
   .login > input:hover{
-    outline: 2px solid #0001;
+    outline: 2px solid rgba(64, 60, 60, 0.067);
   }
   .login > button {
     margin-top: 48px;
     width: 100%;
-    background-color: #DEB887;
-    color: #080710;
+    background-color: #f5f2ee;
+    color: #333336;
     padding: 15px 0;
     font-size: 18px;
     border-radius: 5px;

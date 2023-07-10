@@ -20,7 +20,6 @@ const Register = () => {
   const [phone, setPhone] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [email, setEmail] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [password, setPassword] = useState("");
  
 
@@ -31,6 +30,7 @@ const Register = () => {
   const [validImageUrl, setValidImageUrl] = useState(false);
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
+  const [registration, setRegistration] = useState({});
 
   //box taa terms and conditions
   function handleRadioChange() {
@@ -76,25 +76,31 @@ const Register = () => {
 
   const [isChecked, setIsChecked] = useState(false);
 
+  dispatch({
+    type: 'REGISTER_SUCCESS',
+    payload: { success: true },
+  });
+  
   // Creating the user
-  const submitHandler = (e) => {
-    e.preventDefault();
-    dispatch(
-      register(
-       { firstName,
-        lastName,
-        phone,
-        imageUrl,
-        email,
-        password,}
-        
-      )
-    );
+  const submitHandler = async (e) => {
+    e.preventDefault(); // Prevent the form from submitting
+  
+    try {
+      await dispatch(register({ firstName, lastName, phone, imageUrl, email, password }));
+      // Registration successful
+      navigate('/login'); // Navigate to the login page
+    } catch (error) {
+      // Registration failed
+      console.log(error);
+      setRegistration(null);
+      navigate('/login', { state: { error } }); // Reset the registration state
+    }
   };
-
-  {
-    /* use effects taa controle de saisie */
-  }
+  
+  
+  
+    /* use effects du controle de saisie */
+  
 
   useEffect(() => {
     const result = USER_REGEX.test(firstName);
@@ -143,8 +149,6 @@ const Register = () => {
   
   return (
     <>
-    <Navbar/>
-      {/* el video taa el background */}
       <div className="hero-container">
        
         {/* el message taa el controle de saisie w el loader   */}
@@ -166,15 +170,13 @@ const Register = () => {
           >
           
           </div>
-          {/* les boutons mtaa previous w next */}
-
-        
 
           {/* step lowla mtaa el form eli fiha el info taa simple user */}
         
             <>
-             
-            <h1>Sign Up</h1>
+            <div style={{ marginTop: "-10%"}}>          
+                 <h2>Sign Up</h2>
+ </div> 
               <input
                 id="firstName"
                 type="text"
@@ -293,15 +295,25 @@ const Register = () => {
               />
              
 
-              <Button
-                style={{ marginTop: "5px" }}
-                type="submit"
-                disabled={!isChecked || !isCaptchaVerified  || !setEmail || !lastName || !password  }
-                onClick={() => submitHandler()}
-              >
-                Sign Up
-              </Button>
-              <Row className="py-3">
+             <section className="marginTops">
+  {error && registration === null && (
+    <div className="alert">{error}</div>
+  )}
+  {messageSuccess && (
+    <div className="alertgreen">{messageSuccess}</div>
+  )}
+  {loading}
+</section>
+
+<Button
+  style={{ marginTop: "-50px" }}
+  type="submit"
+  disabled={!isChecked || !isCaptchaVerified || !email || !lastName || !password}
+  onClick={submitHandler}
+>
+  Sign Up
+</Button>
+              <Row className="py-3" style={{ marginTop: "-5%"}}>
                 <Col>
                   Have an account?{""} <Link to="/login">Login</Link>
                 </Col>
