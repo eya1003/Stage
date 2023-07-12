@@ -2,6 +2,7 @@ import { createStore, combineReducers , applyMiddleware } from 'redux'
 import thunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension';
 import {getUsersReducer, userLoginReducer, userRegisterReducer} from '../userRedux/userReducers'
+import { queueReducer} from '../queueRedux/qReducers';
 //el store houwa objet bch ykounou fih des données partagées bin el components lkol
 
 
@@ -10,7 +11,7 @@ const reducer = combineReducers({
     userLogin : userLoginReducer,
     userRegister : userRegisterReducer,
     userDisplay : getUsersReducer,
-
+    queue: queueReducer
 })
 
 const userInfoFromStorage = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null 

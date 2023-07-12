@@ -9,7 +9,6 @@ import Product from './pages/Product.jsx';
 import ProductList from './pages/ProductList.jsx';
 import Login from './pages/login/login';
 import Register from './pages/register/register';
-import usersDashboard from './pages/userDashboard/userDash';
 
 
 function App() {
