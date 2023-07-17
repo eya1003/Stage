@@ -1,75 +1,136 @@
-const { MQQueueManager, MQMD, MQGetMessageOptions } = require('ibm-mq');
 
+const { MQC, MQMD, MQGMO } = require('ibmmq');
+
+
+// Fonction pour se connecter à la file d'attente
+const connectToQueueManager = async () => {
+  const connectionOptions = {
+    queueManager: 'MY_QUEUE_MANAGER',
+    host: 'localhost',
+    port: 1414,
+    channel: 'MY_CHANNEL',
+    transportType: 'TCP',
+    keyRepository: '/path/to/key/repository',
+    certificateLabel: 'MY_CERTIFICATE_LABEL',
+    username: 'my_username',
+    password: 'my_password',
+  };
+  
+
+  // Connectez-vous au gestionnaire de file d'attente
+  const queueManager = await MQC.promisifiedConnx(connectionOptions);
+  return queueManager;
+};
+
+// Fonction pour obtenir les détails de la file d'attente
+const getQueueDetails = async (queueManager, queueName) => {
+  const queueOptions = {
+    // Spécifiez les options de la file d'attente telles que le nom de la file d'attente, etc.
+  };
+
+  // Ouvrez la file d'attente
+  const queue = await queueManager.promisifiedOpen(queueOptions);
+
+  // Obtenez les informations sur la file d'attente
+  const queueInfo = await queue.inq();
+
+  // Fermez la file d'attente
+  await queue.close();
+
+  return queueInfo;
+};
+
+// Fonction pour consommer les messages de la file d'attente
+const consumeMessages = async (queueManager, queueName) => {
+  
+    // Spécifiez les options de la file d'attente telles que le nom de la file d'attente, etc.
+  const queueOptions = {
+    ObjectName: 'MY_QUEUE',
+    ObjectQMgrName: 'MY_QUEUE_MANAGER',
+    OpenOptions: MQC.MQOO_INPUT_AS_Q_DEF, // Open the queue for reading
+    PutMsgOpts: {
+      Persistence: MQC.MQPER_PERSISTENT, // Set message persistence
+      Priority: MQC.MQPRI_PRIORITY_AS_Q_DEF, // Set message priority
+    },
+    GetMsgOpts: {
+      MatchOptions: MQC.MQMO_NONE, // Set match options
+      WaitInterval: MQC.MQWI_UNLIMITED, // Set wait interval
+    },
+  };
+  
+  // Ouvrez la file d'attente
+  const queue = await queueManager.promisifiedOpen(queueOptions);
+
+  // Paramètres pour la consommation des messages
+  const getMessageOptions = {
+    MatchOptions: MQC.MQMO_MATCH_MSG_ID,
+    WaitInterval: MQC.MQWI_UNLIMITED,
+  };
+
+  // Tableau pour collecter les messages reçus
+  const receivedMessages = [];
+
+  // Consommez les messages de la file d'attente
+  while (true) {
+    const messageDescriptor = new MQMD();
+    const getMessageOptions = new MQGMO();
+
+    // Récupérez le message de la file d'attente
+    const message = await queue.get(messageDescriptor, getMessageOptions);
+
+    if (message) {
+      // Collectez le message reçu
+      receivedMessages.push(message);
+    } else {
+      // Aucun message n'est disponible, arrêtez la consommation
+      break;
+    }
+  }
+
+  // Fermez la file d'attente
+  await queue.close();
+
+  return receivedMessages;
+};
+
+// Fonction principale pour obtenir la file d'attente avec les paramètres
 const getQueueWithName = async (req, res) => {
   try {
-    // Connect to IBM WebSphere MQ
-    const connectionOptions = {
-      // Update with your IBM WebSphere MQ connection details
-      queueManager: 'QMGR_NAME',
-      queueName: 'QUEUE_NAME',
-      connection: {
-        hostname: 'MQ_HOST',
-        port: 'MQ_PORT',
-        channel: 'CHANNEL_NAME',
-        user: 'USERNAME',
-        password: 'PASSWORD',
-      },
-    };
+    // Connexion au gestionnaire de file d'attente
+    const queueManager = await connectToQueueManager();
 
-    const queueManager = await new MQQueueManager(connectionOptions.queueManager);
+    const qParams = req.params.qu;
 
-    // Open the queue for getting details
-    const openOptions = MQQueueManager.MQOO_INQUIRE;
-    const queue = await queueManager.openPromise(connectionOptions.queueName, openOptions);
+    // Obtenez les détails de la file d'attente
+    const queueInfo = await getQueueDetails(queueManager, qParams);
 
-    // Get queue details
-    const queueInfo = await queueManager.inquireQueuePromise(connectionOptions.queueName);
+    if (!queueInfo) {
+      console.error('Error occurred: queue not found');
+      res.status(500).json({ error: 'queue not found' });
+    } else {
+      // Extrayez les propriétés spécifiques
+      const { qParams, messageCount, consumerCount } = queueInfo;
 
-    // Extract specific properties
-    const {
-      Name: queueName,
-      CurrentDepth: messageCount,
-      OpenInputCount: consumerCount,
-    } = queueInfo;
+      // Consommez les messages de la file d'attente
+      const receivedMessages = await consumeMessages(queueManager, qParams);
 
-    // Array to collect received messages
-    const receivedMessages = [];
+      // Fermez la connexion au gestionnaire de file d'attente
+      await queueManager.close();
 
-    // Get messages from the queue
-    const getOptions = new MQGetMessageOptions();
-    getOptions.Options = MQGetMessageOptions.MQGMO_WAIT;
-    getOptions.WaitInterval = MQGetMessageOptions.MQWI_UNLIMITED;
+      // Calculez l'état de la file d'attente en fonction du nombre de messages et du nombre de consommateurs
+      const queueState = getQueueState(messageCount, consumerCount);
 
-    while (true) {
-      const md = new MQMD();
-      const message = await queue.getAsync(md, getOptions);
-
-      if (message) {
-        const receivedMessage = message.Buffer.toString().trim();
-        receivedMessages.push(receivedMessage);
-      } else {
-        // No more messages available
-        break;
-      }
+      // Envoyez les messages collectés, l'état de la file d'attente et les détails supplémentaires de la file d'attente en tant que réponse API
+      res.json({
+        messages: receivedMessages,
+        state: queueState,
+        queue: {
+          qParams,
+          messageCount,
+          consumerCount,
+        },
+      });
     }
-
-    // Close the queue and queue manager
-    await queue.closeAsync();
-    await queueManager.disconnectAsync();
-
-    // Calculate the queue state based on the message count and consumer count
-    const queueState = getQueueState(messageCount, consumerCount);
-
-    // Send the collected messages, queue state, and additional queue details as the API response
-    res.json({
-      messages: receivedMessages,
-      state: queueState,
-      queue: {
-        name: queueName,
-        messageCount,
-        consumerCount,
-      },
-    });
   } catch (error) {
     console.error('Error occurred:', error);
     res.status(500).json({ error: 'An error occurred' });
@@ -78,5 +139,5 @@ const getQueueWithName = async (req, res) => {
 
 
 module.exports = {
-  getQueueWithName,
+  getQueueWithName
 }

@@ -85,13 +85,10 @@ const getQueueState = (messageCount, consumerCount) => {
 
 const getQueueWithParams = async (req, res) => {
   try {
-
     // Create channel
     const channel = await createChannel();
 
     const qParams = req.params.qu;
-
-
     // Get queue details
     const queueInfo = await channel.checkQueue(qParams);
     if (!queueInfo){

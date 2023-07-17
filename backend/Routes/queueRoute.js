@@ -23,7 +23,7 @@ router.get('/getQueue/:qu',getQueueWithParams),
 router.get('/getQueue1/:qu',getQueueWithParams1),
 
 // IBM WebSphere
-router.get('/getQueueParam/:qu',getQueueWithName),
+router.get('/getQueueParam/:qu',),
 
 
 
