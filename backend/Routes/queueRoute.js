@@ -16,14 +16,15 @@ const {
 
 
 } = require('../Controllers/IBMWebSphereController.js')
+const { protectSimpleUser } = require("../Middleware/userMiddleware.js")
 
 // Rabbit 
 router.get('/allQueues',getQueueMessages),
-router.get('/getQueue/:qu',getQueueWithParams),
+router.get('/getQueue/:qu',protectSimpleUser,getQueueWithParams),
 router.get('/getQueue1/:qu',getQueueWithParams1),
 
 // IBM WebSphere
-router.get('/getQueueParam/:qu',),
+router.get('/getQueueParam/:qu',getQueueWithName),
 
 
 
