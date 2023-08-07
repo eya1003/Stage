@@ -3,28 +3,31 @@ const multer = require('multer')
 
 const express = require('express')
 const router = express.Router()
-const {  getQueueMessages, 
+const {  
     getQueueWithParams,
-    getQueueWithParams1,
+    getAllMessagesFromQueue,
+    getQueueNames,
 
 
 } = require('../Controllers/RabbitController.js')
 
 
 const { 
-    getQueueWithName,
+    getQueueWithName, checkServerStatus, getQueueNamesFromWebSphere,
 
 
 } = require('../Controllers/IBMWebSphereController.js')
 const { protectSimpleUser } = require("../Middleware/userMiddleware.js")
 
 // Rabbit 
-router.get('/allQueues',getQueueMessages),
-router.get('/getQueue/:qu',protectSimpleUser,getQueueWithParams),
-router.get('/getQueue1/:qu',getQueueWithParams1),
+//router.get('/allMsq',getQueueMessages),
+router.get('/getQueue/:qu',getQueueWithParams),
+router.get('/getMessages/:qu',getAllMessagesFromQueue),
+router.get('/getQueueNames',getQueueNames),
 
 // IBM WebSphere
-router.get('/getQueueParam/:qu',getQueueWithName),
+router.get('/CheckServer',checkServerStatus),
+router.get('/getQu',getQueueNamesFromWebSphere),
 
 
 

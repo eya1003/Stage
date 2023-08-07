@@ -10,10 +10,17 @@ const {
     verifyEmail,
     logIn,
     bloque,
+    findUserById,
+    updateUser,
+    forgetPass,
+    resetPassword,
+    Unbloque,
 
 } = require('../Controllers/userController.js')
 
-const { protectSimpleUser,validator,isAdmin }= require('.././Middleware/userMiddleware.js')
+const { protectSimpleUser,validator,isAdmin }= require('.././Middleware/userMiddleware.js');
+const { checkEmailServerStatus, checkEmailServerStatusSending } = require("../Controllers/EmailController.js");
+const { reset } = require("nodemon");
 
 
 
@@ -43,6 +50,14 @@ router.get('/allUser',getAllUser)
 router.put('/verifyEmail/:token',verifyEmail)
 router.post('/login',logIn)
 router.put('/block',bloque)
+router.put('/Unblock',Unbloque)
+router.get('/getuser/:id',protectSimpleUser,findUserById)
+router.post('/email' ,checkEmailServerStatusSending)
+router.get('/checkEmail' ,checkEmailServerStatus)
+router.post('/forget-password',forgetPass)
+router.put('/reset-password/:token',resetPassword)
+
+router.put('/updateUser/:id',upload.single('imageUrl'),updateUser)
 
 
 

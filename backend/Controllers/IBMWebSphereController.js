@@ -1,143 +1,87 @@
+// ibmController.js
+const net = require('net');
+const ibmConfig = require('../Config/IBMWebSphereConfig');
+const asyncHandler = require('express-async-handler');
 
-const { MQC, MQMD, MQGMO } = require('ibmmq');
+const axios = require('axios');
 
-
-// Fonction pour se connecter à la file d'attente
-const connectToQueueManager = async () => {
-  const connectionOptions = {
-    queueManager: 'MY_QUEUE_MANAGER',
-    host: 'localhost',
-    port: 1414,
-    channel: 'MY_CHANNEL',
-    transportType: 'TCP',
-    keyRepository: '/path/to/key/repository',
-    certificateLabel: 'MY_CERTIFICATE_LABEL',
-    username: 'my_username',
-    password: 'my_password',
-  };
-  
-
-  // Connectez-vous au gestionnaire de file d'attente
-  const queueManager = await MQC.promisifiedConnx(connectionOptions);
-  return queueManager;
-};
-
-// Fonction pour obtenir les détails de la file d'attente
-const getQueueDetails = async (queueManager, queueName) => {
-  const queueOptions = {
-    // Spécifiez les options de la file d'attente telles que le nom de la file d'attente, etc.
-  };
-
-  // Ouvrez la file d'attente
-  const queue = await queueManager.promisifiedOpen(queueOptions);
-
-  // Obtenez les informations sur la file d'attente
-  const queueInfo = await queue.inq();
-
-  // Fermez la file d'attente
-  await queue.close();
-
-  return queueInfo;
-};
-
-// Fonction pour consommer les messages de la file d'attente
-const consumeMessages = async (queueManager, queueName) => {
-  
-    // Spécifiez les options de la file d'attente telles que le nom de la file d'attente, etc.
-  const queueOptions = {
-    ObjectName: 'MY_QUEUE',
-    ObjectQMgrName: 'MY_QUEUE_MANAGER',
-    OpenOptions: MQC.MQOO_INPUT_AS_Q_DEF, // Open the queue for reading
-    PutMsgOpts: {
-      Persistence: MQC.MQPER_PERSISTENT, // Set message persistence
-      Priority: MQC.MQPRI_PRIORITY_AS_Q_DEF, // Set message priority
-    },
-    GetMsgOpts: {
-      MatchOptions: MQC.MQMO_NONE, // Set match options
-      WaitInterval: MQC.MQWI_UNLIMITED, // Set wait interval
-    },
-  };
-  
-  // Ouvrez la file d'attente
-  const queue = await queueManager.promisifiedOpen(queueOptions);
-
-  // Paramètres pour la consommation des messages
-  const getMessageOptions = {
-    MatchOptions: MQC.MQMO_MATCH_MSG_ID,
-    WaitInterval: MQC.MQWI_UNLIMITED,
-  };
-
-  // Tableau pour collecter les messages reçus
-  const receivedMessages = [];
-
-  // Consommez les messages de la file d'attente
-  while (true) {
-    const messageDescriptor = new MQMD();
-    const getMessageOptions = new MQGMO();
-
-    // Récupérez le message de la file d'attente
-    const message = await queue.get(messageDescriptor, getMessageOptions);
-
-    if (message) {
-      // Collectez le message reçu
-      receivedMessages.push(message);
-    } else {
-      // Aucun message n'est disponible, arrêtez la consommation
-      break;
-    }
-  }
-
-  // Fermez la file d'attente
-  await queue.close();
-
-  return receivedMessages;
-};
-
-// Fonction principale pour obtenir la file d'attente avec les paramètres
-const getQueueWithName = async (req, res) => {
+const getQueueNamesFromWebSphere = async () => {
   try {
-    // Connexion au gestionnaire de file d'attente
-    const queueManager = await connectToQueueManager();
+    const baseUrl = `https://${ibmConfig.host}:${ibmConfig.httpsTransportPort}/ibm/console/`;
 
-    const qParams = req.params.qu;
+    // Log in to get the session cookie
+    const loginUrl = `${baseUrl}j_security_check`;
+    const loginData = `j_username=&j_password=`;
+    const loginConfig = {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    };
+    const loginResponse = await axios.post(loginUrl, loginData, loginConfig);
 
-    // Obtenez les détails de la file d'attente
-    const queueInfo = await getQueueDetails(queueManager, qParams);
+    // Use the session cookie to get the queue names
+    const queueUrl = `${baseUrl}com.ibm.ws.console.probdetailhelper.ProblemDetailHelperPortType-getQueueNamesForCurrentUser.json`;
+    const queueConfig = {
+      headers: { Cookie: loginResponse.headers['set-cookie'] },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
+    };
+    
+    const queueResponse = await axios.get(queueUrl, queueConfig);
 
-    if (!queueInfo) {
-      console.error('Error occurred: queue not found');
-      res.status(500).json({ error: 'queue not found' });
-    } else {
-      // Extrayez les propriétés spécifiques
-      const { qParams, messageCount, consumerCount } = queueInfo;
+    // Extract queue names from the response
+    const queueNames = queueResponse.data.map((queue) => queue.name);
 
-      // Consommez les messages de la file d'attente
-      const receivedMessages = await consumeMessages(queueManager, qParams);
-
-      // Fermez la connexion au gestionnaire de file d'attente
-      await queueManager.close();
-
-      // Calculez l'état de la file d'attente en fonction du nombre de messages et du nombre de consommateurs
-      const queueState = getQueueState(messageCount, consumerCount);
-
-      // Envoyez les messages collectés, l'état de la file d'attente et les détails supplémentaires de la file d'attente en tant que réponse API
-      res.json({
-        messages: receivedMessages,
-        state: queueState,
-        queue: {
-          qParams,
-          messageCount,
-          consumerCount,
-        },
-      });
-    }
+    console.log('Queue Names:', queueNames);
+    return queueNames;
   } catch (error) {
-    console.error('Error occurred:', error);
-    res.status(500).json({ error: 'An error occurred' });
+    console.error('Error occurred:', error.message);
+    return [];
   }
 };
 
+
+
+
+const checkServerStatus = asyncHandler(async (req, res) => {
+  const host = ibmConfig.host;
+  const adminPort = ibmConfig.adminPort;
+
+  const isServerUp = await checkPortStatus(host, adminPort);
+
+  if (isServerUp) {
+    console.log('Server is UP');
+    return res.json({ status: 'up' });
+  } else {
+    console.log('Server is DOWN');
+    return res.json({ status: 'down' });
+  }
+});
+
+function checkPortStatus(host, port) {
+  return new Promise((resolve) => {
+    const socket = new net.Socket();
+
+    socket.setTimeout(2000); // Set a timeout for the connection attempt
+    socket.on('connect', () => {
+      socket.destroy();
+      resolve(true); // Port is reachable (server is up)
+    });
+
+    socket.on('timeout', () => {
+      socket.destroy();
+      resolve(false); // Port is not reachable (server is down)
+    });
+
+    socket.on('error', (error) => {
+      socket.destroy();
+      resolve(false); // Port is not reachable (server is down)
+    });
+
+    socket.connect(port, host);
+  });
+}
 
 module.exports = {
-  getQueueWithName
-}
+  checkServerStatus,
+  getQueueNamesFromWebSphere
+};

@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 // react plugin used to create charts
 import { Line, Pie } from "react-chartjs-2";
+import Swal from 'sweetalert2'
+
 // reactstrap components
 import {
   Card,
@@ -13,6 +15,7 @@ import {
   Col,
   Input,
   Button,
+  Alert,
 } from "reactstrap";
 // core components
 import {
@@ -23,26 +26,9 @@ import {
 import axios from "axios"; // Import axios library
 
 function Dashboard() {
+  
 
-  const [searchQueue, setSearchQueue] = useState(""); // State to store the search queue value
 
-
-  const handleSearchClick = () => {
-    // Make the API request to your Node.js server here
-    axios
-      .get(`http://localhost:5000/qu/getQueue/${searchQueue}`) // Replace this URL with the endpoint for your API
-      .then((response) => {
-        // Success response
-        // Process the response data here (e.g., display results, set state, etc.)
-        console.log("Response data:", response.data);
-        alert("Green: Success"); // Show green alert for successful response
-      })
-      .catch((error) => {
-        // Error handling
-        console.error("API Error:", error);
-        alert("Red: Error"); // Show red alert for error response
-      });
-  };
   return (
     <>
 
@@ -100,61 +86,9 @@ function Dashboard() {
               </CardFooter>
             </Card>
           </Col>
-          <Col lg="4" md="4" sm="4">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <div className="icon-big text-center icon-warning">
-                      <i className="nc-icon nc-vector text-danger" />
-                    </div>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <div className="numbers">
-                      <p className="card-category">Errors</p>
-                      <CardTitle tag="p">Kafka</CardTitle>
-                      <p />
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="far fa-clock" /> 500,000 messages/second/server.
-                </div>
-              </CardFooter>
-            </Card>
-          </Col>
+        
         </Row>
-        <Col lg="10" sm="15">
-      <Card className="card-stats">
-        <CardBody>
-          <Row>
-            <Col md="8" xs="7">
-              <div className="numbers">
-                <CardTitle tag="p">
-                  <Input
-                    placeholder="Enter search queue.."
-                    value={searchQueue}
-                    onChange={(e) => setSearchQueue(e.target.value)}
-                  />
-                </CardTitle>
-                <p />
-              </div>
-            </Col>
-            <Col md="4" xs="5">
-              <div className="text-center">
-                <Button color="primary" onClick={handleSearchClick}>
-                  Search
-                </Button>
-              </div>
-            </Col>
-          </Row>
-        </CardBody>
-      </Card>
-    </Col>
-
+       
         <Row>
           <Col >
             <Card>

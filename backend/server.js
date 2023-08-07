@@ -59,6 +59,7 @@ app.use(express.urlencoded({extended : false}))
 app.use('/auth',require('./Routes/auth.js'));
 app.use('/user',require('./Routes/userRoute.js'));
 app.use('/qu',require('./Routes/queueRoute.js'));
+app.use('/file',require('./Routes/fileRoute.js'));
 
 
 

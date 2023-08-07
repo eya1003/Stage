@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 function SignUpForm() {
   const [state, setState] = useState({
@@ -75,10 +76,25 @@ function SignUpForm() {
       // Check if the sign-up was successful and navigate to /login if it was
       if (userData && userData._id) {
         navigate("/login");
+        Swal.fire(
+          'Check Your Email Please!',
+        ) 
       }
     } catch (error) {
-      console.error("Error during signup:", error);
-    }
+      if (error.response) {
+        if (error.response.status === 401) {
+          // Handle different error messages based on the response from the server
+          if (error.response.data.message === 'User with this E-mail adress already exists') 
+          // Handle other error scenarios or show a generic error message
+          Swal.fire({
+            icon: 'error',
+            text: 'E-mail Already Exists'
+          })
+        }
+      } else {
+        // Handle network errors or other issues
+        alert('An error occurred during login. Please check your internet connection and try again.');
+      }    }
   };
 
   return (

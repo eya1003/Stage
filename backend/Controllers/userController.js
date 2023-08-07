@@ -5,370 +5,41 @@ const { generatorOTP ,mailTransport,generateToken } = require('../Utils/mail.js'
 const verficationToken = require('../Models/token.js')
 const validator = require("email-validator")
 const optGenerator = require('otp-generator')
+const fs = require('fs')
+const handlebars = require('handlebars');
+const util = require('util');
+
 
 const path = require("path");
 
-const registerUser = asynHandler( async ( req , res )=> {
-    const { 
-        firstName ,
-        lastName , 
-        email , 
-        password 
-    } = req.body
-    const  imageUrl =req.file?
-    req.file.filename: null;
 
-    if (!firstName  || !email || !password ){
-        res.json({"message":"Please add  all fields"}).status(400)
-            throw new Error('Please add  all fields')
-    }
-    //verifier user exits by email
-    const userExists  =  await User.findOne({email})
-    if(userExists){
-        res.status(401).send({ message: 'User with this E-mail adress already exists' });
-        throw new Error('User with this E-mail adress already exists')
-    }
-    
-    //bcryptjs password cryptage
-    const salt = await bcrypt.genSalt(10)
-    const headPassword = await bcrypt.hash(password,salt)
 
-    const otp = generatorOTP()
+const findUserById = asynHandler(async(req,res)=>{
+  const { id } = req.params
+  const user = await User.findById( id ).select('-password')
+  if (!user) {
+    res.status(420);
 
-    //create user
-
-    const user = await User.create({
-        firstName ,
-        lastName ,
-        email , 
-        imageUrl,
-        password: headPassword  , 
-        role: {name: "userRole"},
-        emailToken: otp,  
-
-    })
-    if (user) {
-      console.log("user created succeffully")
-    }
-
-    mailTransport().sendMail({
-      from:"zainebhamdi2013@gmail.com",
-      to: user.email,
-     subject: "One Step To Verify Your Account ",
-     html: `
-       <html>
-         <style type="text/css">
-    body, p, div {
-      font-family: inherit;
-      font-size: 14px;
-    }
-    body {
-      color: #000000;
-    }
-    body a {
-      color: #1188E6;
-      text-decoration: none;
-    }
-    p { margin: 0; padding: 0; }
-    table.wrapper {
-      width:100% !important;
-      table-layout: fixed;
-      -webkit-font-smoothing: antialiased;
-      -webkit-text-size-adjust: 100%;
-      -moz-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-    }
-    img.max-width {
-      max-width: 100% !important;
-    }
-    .column.of-2 {
-      width: 50%;
-    }
-    .column.of-3 {
-      width: 33.333%;
-    }
-    .column.of-4 {
-      width: 25%;
-    }
-    @media screen and (max-width:480px) {
-      .preheader .rightColumnContent,
-      .footer .rightColumnContent {
-        text-align: left !important;
-      }
-      .preheader .rightColumnContent div,
-      .preheader .rightColumnContent span,
-      .footer .rightColumnContent div,
-      .footer .rightColumnContent span {
-        text-align: left !important;
-      }
-      .preheader .rightColumnContent,
-      .preheader .leftColumnContent {
-        font-size: 80% !important;
-        padding: 5px 0;
-      }
-      table.wrapper-mobile {
-        width: 100% !important;
-        table-layout: fixed;
-      }
-      img.max-width {
-        height: auto !important;
-        max-width: 100% !important;
-      }
-      a.bulletproof-button {
-        display: block !important;
-        width: auto !important;
-        font-size: 80%;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-      }
-      .columns {
-        width: 100% !important;
-      }
-      .column {
-        display: block !important;
-        width: 100% !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-      }
-    }
-  </style>
-      <!--user entered Head Start--><link href="https://fonts.googleapis.com/css?family=Muli&display=swap" rel="stylesheet"><style>
-body {font-family: 'Muli', sans-serif;}
-</style><!--End Head user entered-->
-    </head>
-    <body>
-      <center class="wrapper" data-link-color="#1188E6" data-body-style="font-size:14px; font-family:inherit; color:#000000; background-color:#FFFFFF;">
-        <div class="webkit">
-          <table cellpadding="0" cellspacing="0" border="0" width="100%" class="wrapper" bgcolor="#FFFFFF">
-            <tbody><tr>
-              <td valign="top" bgcolor="#FFFFFF" width="100%">
-                <table width="100%" role="content-container" class="outer" align="center" cellpadding="0" cellspacing="0" border="0">
-                  <tbody><tr>
-                    <td width="100%">
-                      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                        <tbody><tr>
-                          <td>
-                            <!--[if mso]>
-    <center>
-    <table><tr><td width="600">
-  <![endif]-->
-                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;" align="center">
-                                      <tbody><tr>
-                                        <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#FFFFFF" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
-    <tbody><tr>
-      <td role="module-content">
-        <p></p>
-      </td>
-    </tr>
-  </tbody></table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:30px 20px 30px 20px;" bgcolor="#f6f6f6">
-    <tbody>
-      <tr role="module-content">
-        <td height="100%" valign="top">
-          <table class="column" width="540" style="width:540px; border-spacing:0; border-collapse:collapse; margin:0px 10px 0px 10px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="">
-            <tbody>
-              <tr>
-                <td style="padding:0px;margin:0px;border-spacing:0;"><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="72aac1ba-9036-4a77-b9d5-9a60d9b05cba">
-    <tbody>
-      <tr>
-        <td style="font-size:6px; line-height:10px; padding:0px 0px 0px 0px;" valign="top" align="center">
-          <img class="max-width" border="0" style="display:block; color:#000000; text-decoration:none; font-family:Helvetica, arial, sans-serif; font-size:16px;" width="29" alt="" data-proportionally-constrained="true" data-responsive="false" src="http://cdn.mcauto-images-production.sendgrid.net/954c252fedab403f/9200c1c9-b1bd-47ed-993c-ee2950a0f239/29x27.png" height="27">
-        </td>
-      </tr>
-    </tbody>
-  </table><table class="module" role="module" data-type="spacer" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="331cde94-eb45-45dc-8852-b7dbeb9101d7">
-    <tbody>
-      <tr>
-        <td style="padding:0px 0px 20px 0px;" role="module-content" bgcolor="">
-        </td>
-      </tr>
-    </tbody>
-  </table><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="d8508015-a2cb-488c-9877-d46adf313282">
-    <tbody>
-      <tr>
-        <td style="font-size:6px; line-height:10px; padding:0px 0px 0px 0px;" valign="top" align="center">
-          <img class="max-width" border="0" style="display:block; color:#000000; text-decoration:none; font-family:Helvetica, arial, sans-serif; font-size:16px;" width="95" alt="" data-proportionally-constrained="true" data-responsive="false" src="http://cdn.mcauto-images-production.sendgrid.net/954c252fedab403f/61156dfa-7b7f-4020-85f8-a586addf4288/95x33.png" height="33">
-        </td>
-      </tr>
-    </tbody>
-  </table><table class="module" role="module" data-type="spacer" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="27716fe9-ee64-4a64-94f9-a4f28bc172a0">
-    <tbody>
-      <tr>
-        <td style="padding:0px 0px 30px 0px;" role="module-content" bgcolor="">
-        </td>
-      </tr>
-    </tbody>
-  </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="948e3f3f-5214-4721-a90e-625a47b1c957" data-mc-module-version="2019-10-22">
-    <tbody>
-      <tr>
-        <td style="padding:50px 30px 18px 30px; line-height:36px; text-align:inherit; background-color:#ffffff;" height="100%" valign="top" bgcolor="#ffffff" role="module-content"><div><div style="font-family: inherit; text-align: center"><span style="font-size: 43px">Thanks for signing up,${user.firstName}!&nbsp;</span></div><div></div></div></td>
-      </tr>
-    </tbody>
-  </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="a10dcb57-ad22-4f4d-b765-1d427dfddb4e" data-mc-module-version="2019-10-22">
-    <tbody>
-      <tr>
-        <td style="padding:18px 30px 18px 30px; line-height:22px; text-align:inherit; background-color:#ffffff;" height="100%" valign="top" bgcolor="#ffffff" role="module-content"><div><div style="font-family: inherit; text-align: center"><span style="font-size: 18px">Please verify your email address to</span><span style="color: #000000; font-size: 18px; font-family: arial,helvetica,sans-serif"> get access to thousands of exclusive job listings</span><span style="font-size: 18px">.</span></div>
-<div style="font-family: inherit; text-align: center"><span style="color: #ffbe00; font-size: 18px"><strong>Thank you!&nbsp;</strong></span></div><div></div></div></td>
-      </tr>
-    </tbody>
-  </table><table class="module" role="module" data-type="spacer" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7770fdab-634a-4f62-a277-1c66b2646d8d">
-    <tbody>
-      <tr>
-        <td style="padding:0px 0px 20px 0px;" role="module-content" bgcolor="#ffffff">
-        </td>
-      </tr>
-    </tbody>
-  </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="d050540f-4672-4f31-80d9-b395dc08abe1">
-      <tbody>
-        <tr>
-          <td align="center" bgcolor="#ffffff" class="outer-td" style="padding:0px 0px 0px 0px;">
-            <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
-              <tbody>
-                <tr>
-                <td align="center" bgcolor="#ffbe00" class="inner-td" style="border-radius:6px; font-size:16px; text-align:center; background-color:inherit;">
-                  <a href="" style="background-color:#ffbe00; border:1px solid #ffbe00; border-color:#ffbe00; border-radius:0px; border-width:1px; color:#000000; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 40px 12px 40px; text-align:center; text-decoration:none; border-style:solid; font-family:inherit;" target="_blank">Verify Email Now</a>
-                </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table><table class="module" role="module" data-type="spacer" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="7770fdab-634a-4f62-a277-1c66b2646d8d.1">
-    <tbody>
-      <tr>
-        <td style="padding:0px 0px 50px 0px;" role="module-content" bgcolor="#ffffff">
-        </td>
-      </tr>
-    </tbody>
-  </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="a265ebb9-ab9c-43e8-9009-54d6151b1600" data-mc-module-version="2019-10-22">
-    <tbody>
-      <tr>
-        <td style="padding:50px 30px 50px 30px; line-height:22px; text-align:inherit; background-color:#6e6e6e;" height="100%" valign="top" bgcolor="#6e6e6e" role="module-content"><div><div style="font-family: inherit; text-align: center"><span style="color: #ffffff; font-size: 18px"><strong>Here’s what happens next:</strong></span></div>
-<div style="font-family: inherit; text-align: center"><br></div>
-<div style="font-family: inherit; text-align: center"><span style="color: #ffffff; font-size: 18px">1. Upload your resume &nbsp;and we'll keep it on file for every job submission.</span></div>
-<div style="font-family: inherit; text-align: center"><br></div>
-<div style="font-family: inherit; text-align: center"><span style="color: #ffffff; font-size: 18px">2. Submit and edit personalized cover letters for every job you apply to.</span></div>
-<div style="font-family: inherit; text-align: center"><br></div>
-<div style="font-family: inherit; text-align: center"><span style="color: #ffffff; font-size: 18px">3. Get access to our career coaches when you need 1:1 help with your job application.</span></div>
-<div style="font-family: inherit; text-align: center"><span style="color: #ffbe00; font-size: 18px"><strong>+ much more!</strong></span></div>
-<div style="font-family: inherit; text-align: center"><br></div>
-<div style="font-family: inherit; text-align: center"><span style="color: #ffffff; font-size: 18px">Need support? Our support team is always</span></div>
-<div style="font-family: inherit; text-align: center"><span style="color: #ffffff; font-size: 18px">ready to help!&nbsp;</span></div><div></div></div></td>
-      </tr>
-    </tbody>
-  </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="d050540f-4672-4f31-80d9-b395dc08abe1.1">
-      <tbody>
-        <tr>
-          <td align="center" bgcolor="#6e6e6e" class="outer-td" style="padding:0px 0px 0px 0px;">
-            <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
-              <tbody>
-                <tr>
-                <td align="center" bgcolor="#ffbe00" class="inner-td" style="border-radius:6px; font-size:16px; text-align:center; background-color:inherit;">
-                  <a href="" style="background-color:#ffbe00; border:1px solid #ffbe00; border-color:#ffbe00; border-radius:0px; border-width:1px; color:#000000; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 40px 12px 40px; text-align:center; text-decoration:none; border-style:solid; font-family:inherit;" target="_blank">Contact Support</a>
-                </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table><table class="module" role="module" data-type="spacer" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="c37cc5b7-79f4-4ac8-b825-9645974c984e">
-    <tbody>
-      <tr>
-        <td style="padding:0px 0px 30px 0px;" role="module-content" bgcolor="6E6E6E">
-        </td>
-      </tr>
-    </tbody>
-  </table></td>
-              </tr>
-            </tbody>
-          </table>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table><div data-role="module-unsubscribe" class="module" role="module" data-type="unsubscribe" style="color:#444444; font-size:12px; line-height:20px; padding:16px 16px 16px 16px; text-align:Center;" data-muid="4e838cf3-9892-4a6d-94d6-170e474d21e5">
-                                          </div><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="550f60a9-c478-496c-b705-077cf7b1ba9a">
-      <tbody>
-        <tr>
-          <td align="center" bgcolor="" class="outer-td" style="padding:0px 0px 20px 0px;">
-            <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
-              <tbody>
-                <tr>
-                <td align="center" bgcolor="#f5f8fd" class="inner-td" style="border-radius:6px; font-size:16px; text-align:center; background-color:inherit;"><a href="https://sendgrid.com/" style="background-color:#f5f8fd; border:1px solid #f5f8fd; border-color:#f5f8fd; border-radius:25px; border-width:1px; color:#a8b9d5; display:inline-block; font-size:10px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:5px 18px 5px 18px; text-align:center; text-decoration:none; border-style:solid; font-family:helvetica,sans-serif;" target="_blank">♥ POWERED BY TWILIO SENDGRID</a></td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table></td>
-                                      </tr>
-                                    </tbody></table>
-                                    <!--[if mso]>
-                                  </td>
-                                </tr>
-                              </table>
-                            </center>
-                            <![endif]-->
-                          </td>
-                        </tr>
-                      </tbody></table>
-                    </td>
-                  </tr>
-                </tbody></table>
-              </td>
-            </tr>
-          </tbody></table>
-        </div>
-      </center>
-    
-  
-</body>
-       </html>
-     `,
-     attachments: [{
-       filename: 'logo.png',
-       path: path.join(__dirname, '../../public/logo.png'),
-       cid: 'logo'
-     }]
-   });
-
-   if(user){
-       res.status(201).json({
-           _id: user.id,
-           firstName: user.firstName,
-           lastName: user.lastName,
-           phone: user.phone,
-           email: user.email,
-           role : user.role,    
-           verfication : user.emailToken,
-           imageUrl: user.imageUrl,
-          
-       })
-   }
-   else{
-       res.status(400)
-       throw new Error('Invalid user data')
-   }
+      throw new Error(" User Not Found !!")
+  }
+  res.json(user)
 
 })
 
 const getAllUser = asynHandler(async(req,res)=>{
     
-    const user = await User.find( {}).select('-password')
-    if (!user) {
-        res.Error(404)
-        throw new Error(" User Not Found !!")
-    }
-    res.json(user)
+  const user = await User.find( {}).select('-password')
+  if (!user) {
+    res.status(430);
+
+      throw new Error(" User Not Found !!")
+  }
+  res.json(user)
 
 })
 
 const  verifyEmail = asynHandler( async (req,res) => {
-  // const emailToken =req.body.emailToken; 
+// const emailToken =req.body.emailToken; 
 const emailToken = req.params.token; 
 
 // if true = email token is undefined 
@@ -377,110 +48,361 @@ console.log("emailToken is undefined:", !emailToken);
 
 const user = await User.findOne({emailToken});
 if (!emailToken.trim()) {
-  // email is incorrect
-       console.log("Invalid emailToken :", emailToken);
-       res.status(400);
-       throw new Error("Invalid request");
+// email is incorrect
+     console.log("Invalid emailToken :", emailToken);
+     res.status(400);
+     throw new Error("Invalid request");
 
 } else {
 
-              if (!user) {
-                res.status(404);
-                throw new Error("User Not Found!!");
-              }
-            
-              if (user.verify) {
-                res.status(400); 
-                throw new Error("User Already Verified!!");
-              }
-            
-              if (!emailToken) {
-                  res.status(404)
-                  throw  new Error(" Invalid Token !! ")
-              }
-              if (user) {
-              user.emailToken= null;
-              user.verify=true;
-              console.log(user.email);
-            
-              await user.save(); 
-                  mailTransport().sendMail({
-                    from: "zainebhamdi2013@gmail.com",
-                    to: user.email,
-                    subject: "Account Verified Succeffuly ",
-                    html: `
-                      <td align="center">
-                      
-                        <h1 style="color: #AB7F42; text-align: center;"> ${user.lastName} Your Account Is Verified </h1>
-                        <h3 style="color: #444444; font-size: 16px; text-align: justify;">Dear ${user.firstName},</p>
-                      <p>We are pleased to inform you that your account has been verified. You can now access all the features and services that we offer.</p>
-                      <p>If you have any questions or concerns, please don't hesitate to contact us.</p>
-                      <p>Best regards,</p>
-            
-                      <h3 style="color: #444444; font-size: 16px; text-align: justify;">The CARTHAGE CARES Team</p>
-                      </td>
-                    `
-                  }); 
-                  
-
-               
-                  res.json(user)
+            if (!user) {
+              res.status(404);
+              throw new Error("User Not Found!!");
+            }
+          
+            if (user.verify) {
+              res.status(400); 
+              throw new Error("User Already Verified!!");
+            }
+          
+            if (!emailToken) {
+                res.status(404)
+                throw  new Error(" Invalid Token !! ")
+            }
+            if (user) {
+            user.emailToken= null;
+            user.verify=true;
+            console.log(user.email);
+          
+            await user.save();
+          
+                res.json(user)
 
 }
 
 }
 });
 
-const logIn = asynHandler( async (req,res)=>{
-  const  { email , password } = req.body
-  
-  const user = await User.findOne({ email: email });
 
-  if (user &&(await bcrypt.compare(password,user.password) ) ) {
-    if(user.emailToken!=null && (user.verify!=true)){
-      res.status(400).json({message:'Your email is not verified! Please verify your email'})
-    }
-
-      res.json({
-          _id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          imageUrl: user.imageUrl,
-          phone: user.phone,
-          role : user.role, 
-          verify : user.verify,
-          password: user.password, 
-          bloque : user.bloque, 
-          token: generateToken(user._id)
-      })
-      console.log("login with success")
-  }else{
-      res.status(400).json({message:'Invalid Credentials !'})
-      throw new Error('Invalid Credentials !')
-  }
-})
-
-const bloque = asynHandler( async(req,res)  =>{
+const Unbloque = asynHandler( async(req,res)  =>{
   const  { id } =req.body
   const user = await User.findById(id)
-  if (user.bloque==false){
+  if (user.bloque==true){
 
-       user.bloque=true
+       user.bloque=false
        await user.save()
-       res.json("User blocked")
-       console.log("user is blocked ")
+       res.json("User Unbloqued")
+       console.log("user is Unblocked ")
   }
   else {
    res.Error(404)
-   throw new Error(" User already blocked !!")
+   throw new Error(" User already Unblocked !!")
   }
 })
+
+const logIn = asynHandler( async (req,res)=>{
+const  { email , password } = req.body
+
+const user = await User.findOne({ email: email });
+if (!user) {
+  res.status(400).json({message:'Please Sign up!'})
+} else if ( (user.verify!=true)){
+  res.status(400).json({message:'Your email is not verified! Please verify your email'})
+} if(user.emailToken!=null) {
+  res.status(400).json({message:'Please Reset your password'})
+
+}
+if(user.bloque==true) {
+  res.status(400).json({message:'This user is blocked'})
+
+}else if (user &&(await bcrypt.compare(password,user.password) ) ) {
+
+
+    res.json({
+        _id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        imageUrl: user.imageUrl,
+        phone: user.phone,
+        role : user.role, 
+        verify : user.verify,
+        password: user.password, 
+        bloque : user.bloque, 
+        token: generateToken(user._id)
+    })
+    console.log("login with success")
+} 
+ 
+
+else {
+    res.status(400).json({message:'Password is incorrect !'})
+    throw new Error('Invalid Credentials !')
+}
+})
+const bloque = asynHandler(async (req, res) => {
+  const { id } = req.body;
+  const user = await User.findById(id);
+
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  if (user.bloque==false) {
+    user.bloque = true;
+    await user.save();
+    res.json("User blocked");
+    console.log("User is blocked");
+  } else {
+    res.status(400).json({ error: "User already blocked" });
+  }
+});
+
+
+
+const updateUser = asynHandler(async (req, res) => {
+  const { firstName, lastName, phone, email, password } = req.body;
+  let imageUrl; // Declare imageUrl variable
+  const user = await User.findById(req.params.id);
+
+  // Check if a file was uploaded
+  if (req.file) {
+    imageUrl = req.file.filename;
+  } else {
+    // If no file was uploaded, use the existing imageUrl from the user
+    imageUrl = user.imageUrl;
+  }
+
+  if (password) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    if (user) {
+      user.firstName = firstName || user.firstName;
+      user.lastName = lastName || user.lastName;
+      user.imageUrl = imageUrl || user.imageUrl;
+      if (validator.validate(email)) {
+        user.email = email; 
+      } else {
+        user.email = user.email;
+      }
+      user.password = hashedPassword || user.password;
+    }
+  } else {
+    if (user) {
+      user.firstName = firstName || user.firstName;
+      user.lastName = lastName || user.lastName;
+      user.imageUrl = imageUrl || user.imageUrl;
+      if (validator.validate(email)) {
+        user.email = email;
+      } else {
+        user.email = user.email;
+      }
+    }
+  }
+
+  const updatedUser = await user.save();
+  console.log("user updated")
+  res.json({
+    _id: updatedUser._id,
+    firstName: updatedUser.firstName,
+    lastName: updatedUser.lastName,
+    imageUrl: updatedUser.imageUrl,
+    email: updatedUser.email,
+    password: updatedUser.password,
+  });
+});
+
+const forgetPass = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ "message": 'Invalid email' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ "message": "Invalid User" });
+    }
+
+    const otp = optGenerator.generate(10, { specialChars: false });
+    user.emailToken = otp;
+    await user.save();
+
+    console.log("OTP:", otp);
+    console.log("================================");
+
+    fs.readFile('backend\\Utils\\Template\\context.html', { encoding: 'utf-8' }, function (err, html) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("OTP for Email:", otp);
+        var template = handlebars.compile(html);
+        var replacements = {
+          name: user.lastName + " " + user.firstName,
+          action_url: `http://localhost:3000/reset-password/${otp}`,
+        };
+        var htmlToSend = template(replacements);
+
+
+        mailTransport().sendMail({
+          from:"zainebhamdi2013@gmail.com",
+          to: user.email,
+          subject: "Rest Password Mail",
+          html: htmlToSend
+      })       
+      }
+    });
+
+    return res.json("done");
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ "message": "Internal Server Error" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+
+  const emailToken = req.params.token; 
+  const { email } = req.body;
+  const { newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ "message": 'Email and newPassword are required in the request body' });
+  }
+  const user = await User.findOne({emailToken});
+if (!emailToken.trim()) {
+// email is incorrect
+     console.log("Invalid emailToken :", emailToken);
+     res.status(400).json({ "message": 'Problem in generate Token' });
+     ;
+     throw new Error("Invalid request");
+
+} else {
+
+  try {
+
+    if (!user) {
+      return res.status(404).json({ "message": "User not found" });
+    }
+
+    // Reset the user's password here
+
+    const salt = await bcrypt.genSalt(10)
+    const headPassword = await bcrypt.hash(newPassword,salt)
+    user.password = headPassword;
+    user.emailToken = null;
+
+    await user.save();   
+     console.log("Password reset successful");
+
+
+    return res.json({ "message": "Password reset successful" });
+    console.log("Password reset successful");
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ "message": "Internal Server Error" });
+  }
+}
+};
+
+
+
+
+const registerUser = asynHandler( async ( req , res )=> {
+  const { 
+      firstName ,
+      lastName , 
+      email , 
+      password 
+  } = req.body
+  const  imageUrl =req.file?
+  req.file.filename: null;
+
+  if (!firstName  || !email || !password ){
+      res.json({"message":"Please add  all fields"}).status(400)
+          throw new Error('Please add  all fields')
+  }
+  //verifier user exits by email
+  const userExists  =  await User.findOne({email})
+  if(userExists){
+      res.status(401).send({ message: 'User with this E-mail adress already exists' });
+      throw new Error('User with this E-mail adress already exists')
+  }
+  
+  //bcryptjs password cryptage
+  const salt = await bcrypt.genSalt(10)
+  const headPassword = await bcrypt.hash(password,salt)
+
+  const otp = generatorOTP()
+
+  //create user
+
+  const user = await User.create({
+      firstName ,
+      lastName ,
+      email , 
+      imageUrl,
+      password: headPassword  , 
+      role: {name: "userRole"},
+      emailToken: otp,  
+      })
+  if (user) {
+    console.log("user created succeffully")
+        /*
+      fs.readFile('backend\\Utils\\Template\\email.html', {encoding: 'utf-8'}, function (err, html) {
+        if (err) {
+          console.log(err);
+        } else {
+            console.log(otp)
+            var template = handlebars.compile(html);
+            var replacements = {
+                name: user.lastName+" "+user.firstName,
+                action_url: `${process.env.CLIENT_URL}/verify-email/${user.emailToken}`,     
+            };
+            var htmlToSend = template(replacements);
+    mailTransport().sendMail({
+        from:"zainebhamdi2013@gmail.com",
+        to: user.email,
+        subject: "One Step To Verify Your Account",
+        html: htmlToSend
+    })}})
+    */
+  }
+
+
+        if(user){
+            res.status(201).json({
+                _id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phone: user.phone,
+                email: user.email,
+                role : user.role,    
+                verfication : user.emailToken,
+                imageUrl: user.imageUrl,
+                
+            })
+        }
+        else{
+            res.status(400)
+            throw new Error('Invalid user data')
+        }
+
+        
+});
 
 module.exports = { 
     registerUser,
     getAllUser,
     verifyEmail,
     logIn,
-    bloque
+    bloque,
+    findUserById,
+    updateUser,
+    forgetPass,
+    resetPassword ,
+    Unbloque
 }

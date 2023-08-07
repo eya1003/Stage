@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { useDispatch  } from "react-redux";
 
 function SignInForm() {
   const [state, setState] = useState({
@@ -8,6 +9,31 @@ function SignInForm() {
     password: ""
   });
 
+   const {emailToken}=useParams()
+  console.log(emailToken)
+
+    // New function to handle email verification
+    const handleEmailVerification = async () => {
+      try {
+        const response = await axios.put(
+          `http://localhost:5000/user/verifyEmail/${emailToken}`
+        );
+        const verificationData = response.data;
+  
+        // Handle the verification response, show a message, etc.
+        console.log(verificationData);
+      } catch (error) {
+        console.error("Error during email verification:", error);
+      }
+    };
+  
+    // Check if emailToken exists in the URL on component mount
+    useEffect(() => {
+      if (emailToken) {
+        handleEmailVerification();
+      }
+    }, [emailToken]);
+ 
   const navigate = useNavigate();
 
   const [error, setError] = useState(null); // Change the initial value to null

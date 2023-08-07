@@ -166,7 +166,7 @@
   
   .overlay {
     background: #f17e5d;
-    background: -webkit-linear-gradient(to right, #f17e5d, #f17e5d);
+    background: -webkit-linear-gradient(to right, #e5f0c7, #f17e5d);
     background: linear-gradient(to right, #f17e5d, #f17e5d);
     background-repeat: no-repeat;
     background-size: cover;
@@ -255,4 +255,25 @@
     color: #3c97bf;
     text-decoration: none;
   }
-  
+
+  /* Custom CSS to modify the input field size */
+.swal2-input.custom-input {
+  width: 300px; /* Set the desired width */
+  font-size: 16px; /* Set the desired font size */
+}
+
+.swal2-popup.custom-popup {
+  border-radius: 10px; /* Add border-radius to create rounded corners */
+  backdrop-filter: blur(8px); /* Add backdrop-filter to create a glass-like effect */
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Add a subtle box shadow */
+}
+
+.swal2-title.custom-title {
+  background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white background */
+  backdrop-filter: blur(8px); /* Add a blur effect to create the glass morphism */
+  color: #d02626; /* Set the text color for the title */
+  padding: 10px; /* Add padding to make the text more readable */
+  border-radius: 10px; /* Add border radius to create rounded corners */
+}
+
