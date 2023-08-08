@@ -46,6 +46,30 @@ function Dashboard() {
       });
   };
   
+  const checkCrushFTPServer = () => {
+    axios
+      .get("http://localhost:5000/file/checkCrushServer")
+      .then((response) => {
+        // The server responded with the status of the email server
+        const isServerUp = response.data; // Assuming the server returns true/false
+        console.log('File server status:', isServerUp);
+        setMsg("File server is reachable");
+
+        Swal.fire(
+            'Crush FTP server is reachable!'
+          ) 
+        // Handle the server status accordingly (e.g., update state, show a message, etc.)
+      })
+      .catch((error) => {
+        console.error('Error checking File transfer server status:', error);
+        Swal.fire(
+            'Connection Error!',
+          )
+        // Handle the error (e.g., show an error message)
+      });
+  };
+  
+
 
   const fetchFileTransfers = async () => {
     try {
@@ -63,8 +87,7 @@ function Dashboard() {
     <>
 
       <div className="content" style={{ marginTop: "", width: "1500px" }} >
-      
-        <Row>
+      <Row>
           <Col lg="4" md="4" sm="4">
             <Card className="card-stats">
               <CardBody>
@@ -114,7 +137,7 @@ function Dashboard() {
                   <Col md="4" xs="5">
                     <div
                       className="icon-big text-center icon-warning"
-                      onClick={() => setActiveSection("Crush FTP")}
+                      onClick={() => setActiveSection("IBM WebSphere")}
                       style={{ cursor: "pointer" }}
                     >
                       <i className="nc-icon nc-money-coins text-success" />
@@ -154,7 +177,6 @@ function Dashboard() {
         </Row>
 
         {activeSection === "File Zilla" && (
-
 <div>
         <Col lg="8" sm="5">
       <Card className="card-stats">
@@ -251,14 +273,51 @@ function Dashboard() {
     </Col>
     </div>
         )}
-                {activeSection === "Crush FTP" && (
-<div>
+
+{activeSection === "Crush FTP" && (
+
+  <div>
+<Col lg="8" sm="5">
+      <Card className="card-stats">
+        <CardBody>
+          <Row>
+            <Col md="11"  style={{  justifyContent: 'center',height: '47vh' }} >
+            <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <CardTitle tag="h2" style={{ color: '#333', fontSize: '24px', fontWeight: 'bold' }}>
+          Welcome to the Crush FTP Server Status Checker
+        </CardTitle>
+        <p style={{ color: '#666', fontSize: '18px' }}>
+          Click the button below to check the File server's current status.
+        </p>
+      </div>
+                <br/>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '15vh' }}>
+
+                <Button style={{ backgroundColor: "#f17e5d" , marginTop:"", }} onClick={checkFileServer}>
+                  Check Server
+                </Button>
+                <br/>
+                <br/>
+          
+                </div>
+                {error && <Alert color="danger">  <span style={{ fontWeight: 'bold' , fontSize: '12px',}}> {error} </span>  </Alert>}
+
+                {msg && <Alert color="success">  <span style={{ fontWeight: 'bold' , fontSize: '14px'}}> {msg}</span> </Alert> }  
+
+                
+            </Col>
+            <br/>
+          </Row>
+        </CardBody>
+      </Card>
+
+    
+    </Col>
 
 
+    </div>
 
-</div>
-                )}
-
+)}
      </div>
     </>
   );

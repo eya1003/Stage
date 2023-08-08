@@ -50,10 +50,11 @@ console.log(user?.lastName); // Logs the user's last name
     setMsg("Account Updated")
     console.log("msg:", msg);
 
-    Swal.fire({
-      icon: 'error',
-      text: 'E-mail Already Exists'
-    })
+    Swal.fire(
+      '', 
+      'Profile updated successfully.',
+        'success'
+    )
 
     // Make the API request to update the user profile with updatedUserData
     fetch(`http://localhost:5000/user/updateUser/${user._id}`, {
