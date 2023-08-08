@@ -3,7 +3,7 @@ const multer = require('multer')
 
 const express = require('express')
 const router = express.Router()
-const {  checkFTPServerStatus
+const {  checkFTPServerStatus, parseLogFile
 
 } = require('../Controllers/FTPController.js')
 
@@ -11,6 +11,7 @@ const {  checkFTPServerStatus
 // FILe ZILLA 
 
 router.get('/checkServer',checkFTPServerStatus),
+router.get('/get',parseLogFile),
 
 
 

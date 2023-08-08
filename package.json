@@ -45,6 +45,7 @@
     "react-redux": "^8.1.1",
     "socket.io": "^4.7.1",
     "ssh2-sftp-client": "^9.1.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "xml2js": "^0.6.2"
   }
 }

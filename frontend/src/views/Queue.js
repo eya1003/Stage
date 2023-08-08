@@ -308,24 +308,27 @@ function Dashboard() {
                   <p>
                     <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Unknown:</span> The state of the queue could not be determined due to some unknown or unexpected condition.
                   </p>
-                  <p> {messagesQu} </p>
                   
                 </Alert>
                 
               )}
 
-               {messagesQu && (
-               <Alert color="success" style={{ marginTop: '20px', textAlign: 'left', padding: '20px', borderRadius: '5px' }}>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}> Messages in the queue</span>
-                  <p>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}></span>
-                    { messagesQu}
+          {messagesQu && (
+            <Alert color="success" style={{ marginTop: '20px', textAlign: 'left', padding: '20px', borderRadius: '5px' }}>
+              <span style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>Messages in the queue</span>
+              <div>
+              <ul>
+
+                {messagesQu.map((message, index) => (
+                  <p key={index} style={{ fontWeight: '', fontSize: '16px', marginBottom: '5px' }}>
+                    {message}
                   </p>
-    
-                </Alert>
-                  )}
+                ))}
+                                      </ul>
 
-
+              </div>
+            </Alert>
+          )}
 
                 {errorGet && (
                 <Alert color="danger" style={{ marginTop: '20px', textAlign: 'center' }}>
@@ -333,13 +336,9 @@ function Dashboard() {
                 </Alert>
               )}
 
-
-              </Row>
+         </Row>
             </CardBody>
           </Card>
-
-
-
 
         </Col>
           </Col>
