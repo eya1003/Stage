@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // react plugin used to create charts
 import { Line, Pie } from "react-chartjs-2";
 import Swal from 'sweetalert2'
@@ -13,112 +13,126 @@ import {
   CardTitle,
   Row,
   Col,
-  Input,
-  Button,
-  Alert,
 } from "reactstrap";
 import axios from "axios"; // Import axios library
 
+
+import { Navigate, useNavigate } from "react-router-dom";
+
 function Dashboard() {
 
-  const [searchQueue, setSearchQueue] = useState(""); // State to store the search queue value
-  const [messages, setMessages] = useState([]);
-  const [messagesQu, setMessagesQu] = useState([]);
-  const [queueNames, setQueueNames] = useState([]);
-  const [queueState, setQueueState] = useState('');
-  const [ibmState, setIbmState] = useState('');
-  const [error, searchQueuesetError] = useState('');
-  const [errorGet, setErrorGet] = useState('');
   const [activeSection, setActiveSection] = useState("Rabbit MQ");
 
-// Rabbit MQ
-  const handleSearchClick = () => {
-    setError(''); // Clear any previous error messages
+  const [err, setErr] = useState('');
+  const [rabbitMQConfig, setRabbitMQConfig] = useState(null);
 
-    // Make the API request to check server status and queue existence
-    axios
-      .get(`http://localhost:5000/qu/getQueue/${searchQueue}`)
-      .then((response) => {
-        const {  state, messages } = response.data;
-        setQueueState(state);
-        setError(''); // Clear any previous error messages
-        setMessagesQu(messages)
-        // alert('Green: Success'); // Show green alert for successful response
-      })
+  const [host, setHost] = useState('');
+  const [adminPort, setAdminPort] = useState('');
+  const [serverStatus, setServerStatus] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [message, setMessage] = useState(null); // Initialize the message state
   
-       // alert('Green: Success'); // Show green alert for successful response
-      
-      .catch((error) => {
-        if (error.response) {
-          if (error.response.status === 500 && error.response.data.error === 'RabbitMQ server is down or not reachable') {
-            setError('Server down'); // Server is down or not reachable
-            Swal.fire(
-              'Server is Down!'
-            )
-          } else if ( error.response.data.error === 'queue not found') {
-            Swal.fire(
-              'No queue Found!'
-            ) // Queue does not exist
-         }
-        } else {
-          Swal.fire(
-            'Network Error!',
-          ) // Network error or other issues
-        }
-      });
-  };
+  const navigate= useNavigate()
 
 
-  
+// Rabbit MQ from body
+const [formData, setFormData] = useState({
+  rabbitmqHostname: '',
+  rabbitmqPort: '',
+  rabbitmqUsername: '',
+  rabbitmqPassword: '',
+});
 
-  // Rabbit MQ
-  const getNamesQueues = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/qu/getQueueNames');
+const handleChange = event => {
+  const { name, value } = event.target;
+  setFormData(prevData => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
 
-      if (response.status === 200) {
-        setQueueNames(response.data);
-        setErrorGet(''); // Clear any previous error message
-      } else {
-        setErrorGet('Failed to fetch queue names');
-      }
-    } catch (error) {
-      setErrorGet(`Error occurred: ${error.message}`);
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  try {
+    const response = await axios.post('http://localhost:5000/qu/check', {
+      rabbitmqHostname: formData.rabbitmqHostname,
+      rabbitmqPort: formData.rabbitmqPort,
+      rabbitmqUsername: formData.rabbitmqUsername,
+      rabbitmqPassword: formData.rabbitmqPassword,
+    });
+
+    if (response.data === 'Success') {
+      Swal.fire('Connect successfully');
+      localStorage.setItem("configTimestamp", new Date().toISOString());
+      localStorage.setItem("rabbitConfig", JSON.stringify(formData));
+      navigate("/admin/queue"); // Use the navigate function to redirect
+    } else {
+      Swal.fire('Unknown Error: ' + response.data);
     }
-  };
+    setMessage(response.data);
+
+    setTimeout(() => {
+      setMessage(null);
+      setFormData({
+        rabbitmqHostname: '',
+        rabbitmqPort: '',
+        rabbitmqUsername: '',
+        rabbitmqPassword: '',
+      });
+    }, 30000);
+
+    setTimeout(() => {
+      localStorage.removeItem('rabbitConfig');
+      localStorage.removeItem('configTimestamp');
+    }, 120000); 
+    // 120000 milliseconds = 2 minutes 
+    
+  } catch (error) {
+    Swal.fire('Connection Error'); 
+    console.error('Error checking RabbitMQ server:', error);
+  }
+};
+
+
+
 
 
 // IBM Web sphere
 
-  const handleCheckClick = () => {
-    setError(''); // Clear any previous error messages
+const handleSubmitIBM = async (event) => {
+  event.preventDefault();
 
-    // Make the API request to check server status and queue existence
-    axios
-      .get(`http://localhost:5000/qu/CheckServer`) 
-      .then((response) => {
-        const { status } = response.data;
-        setIbmState(status);
-        console.log(status)
-        setError(''); // Clear any previous error messages
-       // alert('Green: Success'); // Show green alert for successful response
-       Swal.fire(
-        'Server is Up!'
-      )
-      })
-      .catch((error) => {
-        if (error.response) {
-          if (error.response.status === 500 && error.response.data.error === 'RabbitMQ server is down or not reachable') {
-            setError('Server down'); // Server is down or not reachable
-            Swal.fire(
-              'Server is Down!'
-            )
-          } 
-      }});
-  };
+  try {
+    const response = await axios.post('http://localhost:5000/qu/CheckServer', {
+      host: host,
+      adminPort: adminPort,
+    });
+
+    const { status } = response.data;
+    setServerStatus(status);
+    setErrorMessage('');
+
+    if (status === 'UP') {
+      Swal.fire('IBM WebSphere server is reachable');
+    }
+
+    setTimeout(() => {
+      setServerStatus('');
+      setHost('');
+      setAdminPort('');
+    }, 30000);
+  } catch (error) {
+    const message = error.response.data.error || 'An error occurred while checking server status.';
+    setServerStatus('');
+    Swal.fire('Connection Error'); 
+  }
+};
+
+
+
+
   return (
     <>
-
       <div className="content" style={{ width: "1500px" }}>
         <Row>
           <Col lg="4" md="4" sm="4">
@@ -208,143 +222,68 @@ function Dashboard() {
             </Card>
           </Col>
         </Row>
+
+
         {activeSection === "Rabbit MQ" && (
 
-          <Col lg="28" ><Col lg="8" >
-            {/* get all queues names */}
-
-
+          <Col lg="28" >
+            
+            <Col lg="8" >
           <Card className="card-stats" >
             <CardBody>
               <Row style={{  justifyContent: 'center'}}>
-              <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px', marginBottom:'50px' }}>
+              <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px', marginBottom:'-20px' }}>
           
             <p style={{ color: '#666', fontSize: '18px' }}>
-              Click the button below to get the name's queues.
+              Check server
             </p>
           </div>
-                
-                  <Col md="4" xs="5" style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <Button style={{ backgroundColor: "#f17e5d", fontSize: '18px', fontWeight: 'bold', padding: '10px 30px' }} onClick={getNamesQueues}>
-                    Check Server
-                  </Button>
-                  
-                </Col>
-              
               </Row>
 
+              
+
               <Row className="mt-4 justify-content-center">
+   
+      <form onSubmit={handleSubmit}>
+        <label>
+          Hostname:
+          <input type="text" name="rabbitmqHostname" required value={formData.rabbitmqHostname} onChange={handleChange} />
+        </label>
+        <label>
+          Port:
+          <input type="text" name="rabbitmqPort" required value={formData.rabbitmqPort} onChange={handleChange} />
+        </label>
+        <label>
+          Username:
+          <input type="text" name="rabbitmqUsername" required value={formData.rabbitmqUsername} onChange={handleChange} />
+        </label>
+        <label>
+          Password:
+          <input type="password" name="rabbitmqPassword" required value={formData.rabbitmqPassword} onChange={handleChange} />
+        </label>
+        <button type="submit">Check server</button>
+      </form>
+     
+
       <Col md="8">
-        <div className="queue-list-container">
+        <div className="queue-list-container" style={{ marginTop:"15px"}}>
           {/* Utilisez ul et li pour afficher une liste ordonnée avec des points */}
           <ul className="list-unstyled" style={styles.list}>
-            {queueNames.map((queueName, index) => (
-              <li key={index} style={styles.listItem}>
-                {queueName}
-              </li>
-            ))}
+          {message !== null && (
+        <p> {message}</p>  
+      )}
           </ul>
         </div>
       </Col>
     </Row>
+
+            
             </CardBody>
           </Card>
-{/* queue with name */}
-
-          <Card className="card-stats" >
-            <CardBody>
-              <Row style={{  justifyContent: 'center'}}>
-              <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px', marginBottom: '50px' }}>
-            <CardTitle tag="h3" style={{ color: '#666', fontSize: '24px', fontWeight: ' ' }}>
-            Use the input field to check if the queue name exists.       
-            </CardTitle>
-            <p style={{ color: '#666', fontSize: '18px' }}>
-            </p>
-          </div>
-                <Col md="8" xs="7">
-                  
-                  <div className="numbers">
-                  <CardTitle tag="p"  >
-                      <Input
-                        placeholder="Enter queue name..."
-                        value={searchQueue}
-                        onChange={(e) => setSearchQueue(e.target.value)}
-                        style={{
-                          borderRadius: '5px',
-                          border: '1px solid #ccc',
-                          padding: '10px',
-                          fontSize: '16px',
-                          width: '100%',
-                        }}
-                        required
-                      />
-                    </CardTitle>
-                    <p />
-                  </div>
-                </Col>
-                  <Col md="4" xs="5" style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <Button style={{ backgroundColor: "#f17e5d", fontSize: '18px', fontWeight: 'bold', padding: '10px 30px' }} onClick={handleSearchClick}>
-                    Search
-                  </Button>
-                </Col>
-                 
-                {error && (
-                <Alert color="danger" style={{ marginTop: '20px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{error}</span>
-                </Alert>
-              )}
-              {queueState && (
-                <Alert color="success" style={{ marginTop: '20px', textAlign: 'left', padding: '20px', borderRadius: '5px' }}>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>Queue State: {queueState}</span>
-                  <p>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Idle:</span> There are no messages in the queue, and there are no consumers actively consuming messages.
-                  </p>
-                  <p>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Backlogged:</span> The queue has messages in it, but there are no consumers actively consuming those messages.
-                  </p>
-                  <p>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Active:</span> The queue has messages in it, and there are consumers actively consuming those messages.
-                  </p>
-                  <p>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Unknown:</span> The state of the queue could not be determined due to some unknown or unexpected condition.
-                  </p>
-                  
-                </Alert>
-                
-              )}
-
-          {messagesQu && (
-            <Alert color="success" style={{ marginTop: '20px', textAlign: 'left', padding: '20px', borderRadius: '5px' }}>
-              <span style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>Messages in the queue</span>
-              <div>
-              <ul>
-
-                {messagesQu.map((message, index) => (
-                  <p key={index} style={{ fontWeight: '', fontSize: '16px', marginBottom: '5px' }}>
-                    {message}
-                  </p>
-                ))}
-                                      </ul>
-
-              </div>
-            </Alert>
-          )}
-
-                {errorGet && (
-                <Alert color="danger" style={{ marginTop: '20px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{errorGet}</span>
-                </Alert>
-              )}
-
-         </Row>
-            </CardBody>
-          </Card>
-
         </Col>
-          </Col>
-          
-          
+          </Col>            
         )}
+
 
         {activeSection === "IBM WebSphere" && (
                   <Col lg="28" >
@@ -352,36 +291,30 @@ function Dashboard() {
 
       <Card className="card-stats">
         <CardBody>
-          <Row>
-            <Col md="11"  style={{  justifyContent: 'center',height: '47vh' }} >
-            <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <CardTitle tag="h2" style={{ color: '#333', fontSize: '24px', fontWeight: 'bold' }}>
-          Welcome to the IBM Web Sphere Server Status Checker
-        </CardTitle>
-        <p style={{ color: '#666', fontSize: '18px' }}>
-          Click the button below to check the server's current status.
-        </p>
+        <Row>
+            <Col md="11"  style={{  justifyContent: 'center',height: '45vh' }} >
+            <h2>IBM Web Sphere Server Checker</h2>
+      <div>
+        <label>Host:</label>
+        <input type="text" value={host} onChange={(e) => setHost(e.target.value)} />
       </div>
-                <br/>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '15vh' }}>
-
-                <Button style={{ backgroundColor: "#f17e5d" }} onClick={handleCheckClick}>
-                  Check Server
-                </Button>
-                <br/>
-                <br/>
-          
-                </div>
-                {error && <Alert color="danger">  <span style={{ fontWeight: 'bold' , fontSize: '12px',}}> {error} </span>  </Alert>}
-                {ibmState && (
-                <Alert style={{ marginTop: '20px', textAlign: 'left', padding: '20px', borderRadius: '5px', backgroundColor:"#ef8157" }}>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>IBM Server State: {ibmState}</span>
-                  
-                </Alert>
+      <div>
+        <label>Port:</label>
+        <input type="text" value={adminPort} onChange={(e) => setAdminPort(e.target.value)} />
+      </div>
+      <button onClick={handleSubmitIBM}>Check Status</button>
                 
-              )}
             </Col>
             <br/>
+            <Col md="8">
+        <div className="queue-list-container" style={{ marginTop:"15px"}}>
+          <ul className="list-unstyled" style={styles.list}>
+          {serverStatus !== null && (
+        <p>{serverStatus }</p>
+      )}
+          </ul>
+        </div>
+      </Col>
           </Row>
         </CardBody>
       </Card>   

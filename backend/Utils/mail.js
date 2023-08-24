@@ -2,7 +2,6 @@ const optGenerator = require('otp-generator')
 const nodemail = require('nodemailer')
 const jwt = require('jsonwebtoken')
 
-let otp= ''
 
 exports.generatorOTP = () => {
     const OTP = optGenerator.generate(10,{specialChars: false});

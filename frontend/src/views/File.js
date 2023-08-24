@@ -17,69 +17,83 @@ import axios from "axios"; // Import axios library
 
 function Dashboard() {
 
+  const [host, setHost] = useState('');
+  const [port, setPort] = useState('');
+  const [msgs, setMsgs] = useState('');
+
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [fileTransfers, setFileTransfers] = useState({ STOR: [], RETR: [] });
   const [activeSection, setActiveSection] = useState("File Zilla");
 
+  const [ftpConfig, setFTPConfig] = useState({
+    host: '',
+    port: '',
+    user: '',
+    password: '',
+  });
+  const [status, setStatus] = useState('');
 
-  const checkFileServer = () => {
-    axios
-      .get("http://localhost:5000/file/checkServer")
-      .then((response) => {
-        // The server responded with the status of the email server
-        const isServerUp = response.data; // Assuming the server returns true/false
-        console.log('File server status:', isServerUp);
-        setMsg("File server is reachable");
-
-        Swal.fire(
-            'File transferserver is reachable!'
-          ) 
-        // Handle the server status accordingly (e.g., update state, show a message, etc.)
-      })
-      .catch((error) => {
-        console.error('Error checking File transfer server status:', error);
-        Swal.fire(
-            'Connection Error!',
-          )
-        // Handle the error (e.g., show an error message)
-      });
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFTPConfig((prevConfig) => ({ ...prevConfig, [name]: value }));
   };
-  
-  const checkCrushFTPServer = () => {
-    axios
-      .get("http://localhost:5000/file/checkCrushServer")
-      .then((response) => {
-        // The server responded with the status of the email server
-        const isServerUp = response.data; // Assuming the server returns true/false
-        console.log('File server status:', isServerUp);
-        setMsg("File server is reachable");
 
-        Swal.fire(
-            'Crush FTP server is reachable!'
-          ) 
-        // Handle the server status accordingly (e.g., update state, show a message, etc.)
-      })
-      .catch((error) => {
-        console.error('Error checking File transfer server status:', error);
-        Swal.fire(
-            'Connection Error!',
-          )
-        // Handle the error (e.g., show an error message)
-      });
-  };
-  
-
-
-  const fetchFileTransfers = async () => {
+  const checkStatus = async () => {
     try {
-      const response = await fetch('http://localhost:5000/file/get'); // Assuming the API is available at the same domain as the React app
-      const data = await response.json();
-      setFileTransfers(data);
+      const response = await axios.post('http://localhost:5000/file/checkServer', ftpConfig);
+      setStatus(response.data);
+  
+      // Save the FTP configuration in local storage
+      localStorage.setItem('FileZillaConfig', JSON.stringify(ftpConfig));
+  
+      setTimeout(() => {
+        setStatus('');
+        setFTPConfig({
+          host: '',
+          port: '',
+          user: '',
+          password: '',
+        });
+      }, 30000); // 30000 milliseconds = 30 seconds
+
+      
+  // Set a timeout to clear the localStorage after 4 hours (240,000 milliseconds)
+    setTimeout(() => {
+      localStorage.removeItem('FileZillaConfig');
+    }, 240000 * 60); // 240 minutes * 60 seconds per minute * 1000 milliseconds per second
+
     } catch (error) {
-      console.error('Error fetching file transfers:', error);
+      setStatus('Failed to check FTP server status');
     }
   };
+  
+
+
+  const checkCrushFTPServerStatus = () => {
+    axios
+      .post("http://localhost:5000/file/checkCrushServer", {
+        host: host,
+        port: port, 
+      })
+      .then((response) => {
+        // The server responded with the status of the CrushFTP server
+        const isServerUp = response.data; // Assuming the server returns true/false
+        console.log('CrushFTP server status:', isServerUp);
+        setMsgs("CrushFTP server is reachable");
+
+        Swal.fire(
+          'CrushFTP server is reachable!'
+        );
+      })
+      .catch((error) => {
+        console.error('Error checking CrushFTP server status:', error);
+        Swal.fire(
+          'Connection Error!'
+        );
+      });
+  };
+  
 
 
 
@@ -103,7 +117,7 @@ function Dashboard() {
                   </Col>
                   <Col md="8" xs="7">
                     <div className="numbers">
-                      <p className="card-category">AMQP protocol</p>
+                      <p className="card-category">FTP</p>
                       <CardTitle
                         tag="p"
                         onClick={() => setActiveSection("File Zilla")}
@@ -125,7 +139,7 @@ function Dashboard() {
               <CardFooter>
                 <hr />
                 <div className="stats">
-                  <i className="fas fa-sync-alt" /> 4.7 million messages/second
+                  <i className="fas fa-sync-alt" /> 21
                 </div>
               </CardFooter>
             </Card>
@@ -145,7 +159,7 @@ function Dashboard() {
                   </Col>
                   <Col md="8" xs="7">
                     <div className="numbers">
-                      <p className="card-category"> +23,000 customers</p>
+                      <p className="card-category">FTP </p>
                       <CardTitle
                         tag="p"
                         onClick={() => setActiveSection("Crush FTP")}
@@ -169,7 +183,7 @@ function Dashboard() {
               <CardFooter>
                 <hr />
                 <div className="stats">
-                  <i className="far fa-calendar" /> Middleware
+                  <i className="far fa-calendar" /> 9090
                 </div>
               </CardFooter>
             </Card>
@@ -182,32 +196,38 @@ function Dashboard() {
       <Card className="card-stats">
         <CardBody>
           <Row>
-            <Col md="11"  style={{  justifyContent: 'center',height: '47vh' }} >
-            <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <CardTitle tag="h2" style={{ color: '#333', fontSize: '24px', fontWeight: 'bold' }}>
-          Welcome to the FILE Transfer Server Status Checker
-        </CardTitle>
-        <p style={{ color: '#666', fontSize: '18px' }}>
-          Click the button below to check the File server's current status.
-        </p>
+            <Col md="11"  style={{  justifyContent: 'center',height: '65vh' }} >
+            <h2>FTP Server Status Checker</h2>
+      <div>
+        <label>Host:</label>
+        <input type="text" name="host" placeholder="127.0.0.1" value={ftpConfig.host} onChange={handleInputChange} />
       </div>
-                <br/>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '15vh' }}>
-
-                <Button style={{ backgroundColor: "#f17e5d" , marginTop:"", }} onClick={checkFileServer}>
-                  Check Server
-                </Button>
-                <br/>
-                <br/>
-          
-                </div>
-                {error && <Alert color="danger">  <span style={{ fontWeight: 'bold' , fontSize: '12px',}}> {error} </span>  </Alert>}
-
-                {msg && <Alert color="success">  <span style={{ fontWeight: 'bold' , fontSize: '14px'}}> {msg}</span> </Alert> }  
-
+      <div>
+        <label>Port:</label>
+        <input type="text" name="port" value={ftpConfig.port} onChange={handleInputChange} />
+      </div>
+      <div>
+        <label>User:</label>
+        <input type="text" name="user" value={ftpConfig.user} onChange={handleInputChange} />
+      </div>
+      <div>
+        <label>Password:</label>
+        <input type="password" name="password" value={ftpConfig.password} onChange={handleInputChange} />
+      </div>
+      <button onClick={checkStatus}>Check Status</button>
                 
             </Col>
             <br/>
+            <Col md="8">
+        <div className="queue-list-container" style={{ marginTop:"15px"}}>
+          {/* Utilisez ul et li pour afficher une liste ordonnée avec des points */}
+          <ul className="list-unstyled" style={styles.list}>
+          {status !== null && (
+        <p>{status}</p>
+      )}
+          </ul>
+        </div>
+      </Col>
           </Row>
         </CardBody>
       </Card>
@@ -215,98 +235,42 @@ function Dashboard() {
     
     </Col>
 
-    <Col lg="8" sm="5" style={{ height: '100%' }}>
-      <Card className="card-stats">
-        <CardBody style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Row>
-            <Col md="11" style={{ justifyContent: 'center', height: '47vh', position: 'relative' }}>
-              <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <p style={{ color: '#666', fontSize: '18px' }}>
-                  Click the button below to check the File's name.
-                </p>
-              </div>
-              <br />
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '15vh' }}>
-                <Button style={{ backgroundColor: '#f17e5d', marginTop: '' }} onClick={fetchFileTransfers}>
-                  Fetch File Transfers
-                </Button>
-              </div>
-                       {fileTransfers && (
-                <div style={{ flex: 1, overflowY: 'auto' }}>
-                  <Alert>
-                    <div>
-                      <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
-                        <CardTitle tag="h2" style={{ color: '#333', fontSize: '14px', fontWeight: 'bold' }}>
-                          STOR Transfers:
-                        </CardTitle>
-                      </div>
-                      <ul>
-                        {fileTransfers.STOR.map((transfer, index) => (
-                          <li key={index}>{transfer.fileName}</li>
-                        ))}
-                      </ul>
-                      <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
-                        <CardTitle tag="h2" style={{ color: '#333', fontSize: '14px', fontWeight: 'bold' }}>
-                          RETR Transfers:
-                        </CardTitle>
-                      </div>
-                      <ul>
-                        {fileTransfers.RETR.map((transfer, index) => (
-                          <li key={index}>{transfer.fileName}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </Alert>
-                </div>
-              )}
-              {error && (
-                <Alert color="danger">
-                  <span style={{ fontWeight: 'bold', fontSize: '12px' }}>{error}</span>
-                </Alert>
-              )}
-              
-            </Col>
-            <br />
-          </Row>
-        </CardBody>
-      </Card>
-    </Col>
+
+
     </div>
         )}
 
 {activeSection === "Crush FTP" && (
 
   <div>
-<Col lg="8" sm="5">
+    <Col lg="8" sm="5">
       <Card className="card-stats">
         <CardBody>
           <Row>
-            <Col md="11"  style={{  justifyContent: 'center',height: '47vh' }} >
-            <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <CardTitle tag="h2" style={{ color: '#333', fontSize: '24px', fontWeight: 'bold' }}>
-          Welcome to the Crush FTP Server Status Checker
-        </CardTitle>
-        <p style={{ color: '#666', fontSize: '18px' }}>
-          Click the button below to check the File server's current status.
-        </p>
+            <Col md="11"  style={{  justifyContent: 'center',height: '45vh' }} >
+            <h2>FTP Server Status Checker</h2>
+      <div>
+        <label>Host:</label>
+        <input type="text" name="host" placeholder="127.0.0.1" value={host} onChange={(e) => setHost(e.target.value)} />
       </div>
-                <br/>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '15vh' }}>
-
-                <Button style={{ backgroundColor: "#f17e5d" , marginTop:"", }} onClick={checkFileServer}>
-                  Check Server
-                </Button>
-                <br/>
-                <br/>
-          
-                </div>
-                {error && <Alert color="danger">  <span style={{ fontWeight: 'bold' , fontSize: '12px',}}> {error} </span>  </Alert>}
-
-                {msg && <Alert color="success">  <span style={{ fontWeight: 'bold' , fontSize: '14px'}}> {msg}</span> </Alert> }  
-
+      <div>
+        <label>Port:</label>
+        <input type="text" name="port" value={port} onChange={(e) => setPort(e.target.value)} />
+      </div>
+      <button onClick={checkCrushFTPServerStatus}>Check Status</button>
                 
             </Col>
             <br/>
+            <Col md="8">
+        <div className="queue-list-container" style={{ marginTop:"15px"}}>
+          {/* Utilisez ul et li pour afficher une liste ordonnée avec des points */}
+          <ul className="list-unstyled" style={styles.list}>
+          {msgs !== null && (
+        <p>{msgs}</p>
+      )}
+          </ul>
+        </div>
+      </Col>
           </Row>
         </CardBody>
       </Card>
@@ -324,3 +288,19 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+const styles = {
+  list: {
+    backgroundColor: '#f17e5d',
+    borderRadius: '10px',
+    padding: '0.5px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    listStyleType: 'circle', // Utilisez listStyleType pour afficher les points
+  },
+  listItem: {
+    fontSize: '18px',
+    fontWeight: '',
+    marginBottom: '10px',
+    color: '#fff',
+  },
+};

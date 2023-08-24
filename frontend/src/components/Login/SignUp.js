@@ -19,12 +19,15 @@ function SignUpForm() {
   const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{2,23}$/;
   //const CIN_REGEX = /^[0-1][0-9]{7}$/;
 
-  const PHONE_REGEX = /^[2-9][0-9]{7}$/;
+  //const PHONE_REGEX = /^[2-9][0-9]{7}$/;
   const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,24}$/;
+
+
   /*const DATE_REGEX =
     /^(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/;*/
-  const IMAGE_REGEX = /\.(png|jpe?g)$/i;
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const IMAGE_REGEX = /\.(png|jpe?g)$/i;
+
+      const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -36,12 +39,26 @@ function SignUpForm() {
 
   const handleImageChange = (evt) => {
     const imageFile = evt.target.files[0];
-    setState({
-      ...state,
-      image: imageFile,
-    });
+  
+    if (imageFile) {
+      if (!IMAGE_REGEX.test(imageFile.name)) {
+        Swal.fire({
+          icon: 'error',
+          text: 'Please select a valid PNG or JPG image file.',
+        });
+        evt.target.value = ''; // Optionally, reset the input value
+        return;
+      }
+  
+      setState({
+        ...state,
+        image: imageFile,
+      });
+    }
   };
-  const navigate = useNavigate(); // Initialize the useNavigate hook
+  
+  
+  const navigate = useNavigate();
 
   const handleOnSubmit = async (evt) => {
     evt.preventDefault();
@@ -141,10 +158,19 @@ function SignUpForm() {
           onChange={handleChange}
           placeholder="Password"
           pattern={PWD_REGEX.source}
-          title="Password must be between 8 and 24 characters and contain at least one lowercase letter, one uppercase letter, and one digit."
+          title="Password must contain at least one lowercase letter, one uppercase letter, one digit, and be 8 to 24 characters long."
           required
         />
-        <input type="file" name="image" onChange={handleImageChange} accept=".png, .jpg, .jpeg" required />
+
+            <input
+              type="file"
+              name="image"
+              onChange={handleImageChange}
+              accept=".png, .jpg, .jpeg"
+              required
+            />
+
+
         <button>Sign Up</button>
       </form>
     </div>

@@ -3,20 +3,19 @@ const multer = require('multer')
 
 const express = require('express')
 const router = express.Router()
-const {  checkFTPServerStatus, parseLogFile
+const {  checkFTPServerStatus, checkFTPConnection
 
 } = require('../Controllers/FileZillaController.js')
-const { checkCrushFTPServerStatus } = require("../Controllers/CrushFtpController.js")
+const { checkCrushFTPServerStatus,  } = require("../Controllers/CrushFtpController.js")
 
 
 // FILe ZILLA 
-
-router.get('/checkServer',checkFTPServerStatus),
-router.get('/get',parseLogFile),
+router.post('/checkServer',checkFTPServerStatus),
+router.post('/checkExist',checkFTPConnection),
 
 
 // Crush ftp
-router.get('/checkCrushServer',checkCrushFTPServerStatus),
+router.post('/checkCrushServer',checkCrushFTPServerStatus),
 
 
 

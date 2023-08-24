@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Swal from 'sweetalert2'
 
 // reactstrap components
@@ -17,34 +17,76 @@ import axios from "axios"; // Import axios library
 
 function Dashboard() {
 
-  const [error, setError] = useState('');
-  const [msg, setMsg] = useState('');
+  const [host, setHost] = useState('');
+  const [port, setPort] = useState('');
+  const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const [imapHost, setIMAPHost] = useState('');
+  const [imapPort, setIMAPPort] = useState('');
+  const [result, setResult] = useState('');
+
+  const [hostSMTPS, setHostSMTPS] = useState('');
+  const [portSMTPS, setPortSMTPS] = useState('');
+  const [resultS, setResultS] = useState('');
+
+  const [activeSection, setActiveSection] = useState("SMTP");
 
 
-  const checkEmailServer = () => {
-    axios
-      .get("http://localhost:5000/user/checkEmail")
-      .then((response) => {
-        // The server responded with the status of the email server
-        const isServerUp = response.data; // Assuming the server returns true/false
-        console.log('Email server status:', isServerUp);
-        setMsg("Email server is reachable");
+  //SMTP
+  const checkServerSMTPStatus = async () => {
+    setLoading(true);
 
-        Swal.fire(
-            'Email server is reachable!'
-          ) 
-        // Handle the server status accordingly (e.g., update state, show a message, etc.)
-      })
-      .catch((error) => {
-        console.error('Error checking email server status:', error);
-        Swal.fire(
-            'Connection Error!',
-          )
-        // Handle the error (e.g., show an error message)
+    try {
+      const response = await axios.post('http://localhost:5000/email/checkEmail', {
+        host: host,
+        port: port,
       });
-  };
-  
 
+      const data = response.data;
+      setStatus(data === 'Email server is up' ? 'Server is reachable' : 'Server is not reachable');
+   
+    } catch (error) {
+      console.error('Error checking email server status:', error);
+      setStatus('Failed to check server status.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  
+//IMAP
+  const checkIMAPStatus = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/email/checkIMAP', {
+        imapHost: imapHost,
+        imapPort: imapPort,
+      });
+
+      const data = response.data;
+      setResult(data.imapServer ? 'IMAP server is reachable' : 'IMAP server is not reachable');
+    } catch (error) {
+      console.error('Error checking IMAP server status:', error);
+      setResultS('Failed to check IMAP server status');
+    }
+  };
+
+  //SMTPS
+  const checkSMTPSServer = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/email/checkSMTPS', {
+        host: hostSMTPS,
+        port: parseInt(portSMTPS), // Parse port as integer
+      });
+
+      const data = response.data;
+      setResultS(data.smtpsServer ? 'SMTPS server is reachable' : 'SMTPS server is not reachable');
+    } catch (error) {
+      console.error('Error checking SMTPS server status:', error);
+      setResult('Failed to check SMTPS server status');
+    }
+  };
 
 
   return (
@@ -52,19 +94,37 @@ function Dashboard() {
 
       <div className="content" style={{ marginTop: "", width: "1500px" }} >
         <Row >
-          <Col lg="4" md="4" sm="4">
+          <Col lg="3" md="3" sm="3">
             <Card className="card-stats">
               <CardBody>
                 <Row>
                   <Col md="4" xs="5">
-                    <div className="icon-big text-center icon-warning">
-                      <i className="nc-icon nc-vector text-danger" />
+                  <div
+                      className="icon-big text-center icon-warning"
+                      onClick={() => setActiveSection("SMTP")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <i className="nc-icon nc-money-coins text-success" />
                     </div>
                   </Col>
                   <Col md="8" xs="7">
                     <div className="numbers">
                       <p className="card-category"> Port 25</p>
-                      <CardTitle tag="p">SMTP</CardTitle>
+                      <CardTitle
+                        tag="p"
+                        onClick={() => setActiveSection("SMTP")}
+                        style={{
+                          cursor: "pointer",
+                          color:
+                            activeSection === "SMTP"
+                              ? "#f17e5d"
+                              : "inherit",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                        }} 
+                      >
+                        SMTP
+                      </CardTitle>
                       <p />
                     </div>
                   </Col>
@@ -78,34 +138,137 @@ function Dashboard() {
               </CardFooter>
             </Card>
           </Col>
+          <Col lg="3" md="2" sm="2">
+            <Card className="card-stats">
+              <CardBody>
+                <Row>
+                  <Col md="4" xs="5">
+                  <div
+                      className="icon-big text-center icon-warning"
+                      onClick={() => setActiveSection("IMAP")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <i className="nc-icon nc-money-coins text-success" />
+                    </div>
+                  </Col>
+                  <Col md="8" xs="7">
+                    <div className="numbers">
+                      <p className="card-category"> Port 993</p>
+                      <CardTitle
+                        tag="p"
+                        onClick={() => setActiveSection("IMAP")}
+                        style={{
+                          cursor: "pointer",
+                          color:
+                            activeSection === "IMAP"
+                              ? "#f17e5d"
+                              : "inherit",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                        }} 
+                      >
+                        IMAP
+                      </CardTitle>                      <p />
+                    </div>
+                  </Col>
+                </Row>
+              </CardBody>
+              <CardFooter>
+                <hr />
+                <div className="stats">
+                  <i className="far fa-clock" /> Internet Message Access Protocol
+                </div>
+              </CardFooter>
+            </Card>
+          </Col>
+          <Col lg="3" md="2" sm="3">
+            <Card className="card-stats">
+              <CardBody>
+                <Row>
+                  <Col md="4" xs="5">
+                  <div
+                      className="icon-big text-center icon-warning"
+                      onClick={() => setActiveSection("SMTPS")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <i className="nc-icon nc-money-coins text-success" />
+                    </div>
+                  </Col>
+                  <Col md="8" xs="7">
+                    <div className="numbers">
+                      <p className="card-category"> Port 465</p>
+                      <CardTitle
+                        tag="p"
+                        onClick={() => setActiveSection("SMTPS")}
+                        style={{
+                          cursor: "pointer",
+                          color:
+                            activeSection === "SMTPS"
+                              ? "#f17e5d"
+                              : "inherit",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                        }} 
+                      >
+                        SMTPS
+                      </CardTitle>                      <p />
+                    </div>
+                  </Col>
+                </Row>
+              </CardBody>
+              <CardFooter>
+                <hr />
+                <div className="stats">
+                  <i className="far fa-clock" /> Secure Simple Mail Transfer Protocol
+                </div>
+              </CardFooter>
+            </Card>
+          </Col>
+                        
         </Row>
+
+
+{activeSection === "SMTP" && (
         <Col lg="8" sm="5">
       <Card className="card-stats">
         <CardBody>
           <Row>
             <Col md="11"  style={{  justifyContent: 'center',height: '47vh' }} >
-            <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <CardTitle tag="h2" style={{ color: '#333', fontSize: '24px', fontWeight: 'bold' }}>
-          Welcome to the Email Server Status Checker
-        </CardTitle>
-        <p style={{ color: '#666', fontSize: '18px' }}>
-          Click the button below to check the email server's current status.
-        </p>
+              <div>
+            <div>
+        <label>Host:</label>
+        <input
+          type="text"
+          value={host}
+          placeholder="smtp.gmail.com"
+          onChange={(e) => setHost(e.target.value)}
+        />
       </div>
-                <br/>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '15vh' }}>
-
-                <Button style={{ backgroundColor: "#f17e5d" , marginTop:"", }} onClick={checkEmailServer}>
-                  Check Server
-                </Button>
-                <br/>
-                <br/>
-          
-                </div>
-                {error && <Alert color="danger">  <span style={{ fontWeight: 'bold' , fontSize: '12px',}}> {error} </span>  </Alert>}
-
-                {msg && <Alert color="success">  <span style={{ fontWeight: 'bold' , fontSize: '14px'}}> {msg}</span> </Alert> }  
-
+      <div>
+        <label>Port:</label>
+        <input
+          type="text"
+          value={port}
+          onChange={(e) => setPort(e.target.value)}
+        />
+      </div>
+      <button onClick={checkServerSMTPStatus} disabled={loading}>
+        Check Server Status
+      </button>
+      <Col md="8">
+        <div className="queue-list-container" style={{ marginTop:"25px"}}>
+          {/* Utilisez ul et li pour afficher une liste ordonnée avec des points */}
+          <ul className="list-unstyled" style={styles.list}>
+          {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <p>{status}</p>
+      )}
+          </ul>
+        </div>
+      </Col>
+     
+    </div>
                 
             </Col>
             <br/>
@@ -115,9 +278,98 @@ function Dashboard() {
 
     
     </Col>
+)}
+
+
+
+{activeSection === "IMAP" && (
+
+<Col lg="8" sm="5">
+<Card className="card-stats">
+<CardBody>
+  <Row>
+    <Col md="11"  style={{  justifyContent: 'center',height: '47vh' }} >
+                  
+    <div>
+      <div>
+        <label>IMAP Host:</label>
+        <input type="text" value={imapHost} placeholder="imap.gmail.com" onChange={e => setIMAPHost(e.target.value)} />
+      </div>
+      <div>
+        <label>IMAP Port:</label>
+        <input type="text" value={imapPort} onChange={e => setIMAPPort(e.target.value)} />
+      </div>
+      <button onClick={checkIMAPStatus}>Check IMAP Server Status</button>
+      <Col md="8">
+        <div className="queue-list-container" style={{ marginTop:"25px"}}>
+          <ul className="list-unstyled" style={styles.list}>
+        <p>{result}</p>
+          </ul>
+        </div>
+      </Col>
+    </div>
+        
+    </Col>
+    <br/>
+  </Row>
+</CardBody>
+</Card>
+
+
+</Col>
+)}
+
+{activeSection === "SMTPS" && (
+<Col lg="8" sm="5">
+      <Card className="card-stats">
+        <CardBody>
+          <Row>
+            <Col md="11"  style={{  justifyContent: 'center',height: '47vh' }} >
+<div>
+      <div>
+        <label>SMTPS Host:</label>
+        <input type="text" value={hostSMTPS} placeholder="smtp.gmail.com" onChange={e => setHostSMTPS(e.target.value)} />
+      </div>
+      <div>
+        <label>SMTPS Port:</label>
+        <input type="text" value={portSMTPS} onChange={e => setPortSMTPS(e.target.value)} />
+      </div>
+      <button onClick={checkSMTPSServer}>Check SMTPS Server Status</button>
+      <Col md="6">
+        <div className="queue-list-container" style={{ marginTop:"25px"}}>
+          {/* Utilisez ul et li pour afficher une liste ordonnée avec des points */}
+          <ul className="list-unstyled" style={styles.list}>
+        <p>{resultS}</p>
+          </ul>
+        </div>
+      </Col> 
+         </div>
+    </Col>
+    </Row>
+    </CardBody>
+    </Card>
+    </Col>
+)}
+
      </div>
     </>
   );
 }
+const styles = {
+  list: {
+    backgroundColor: '#f17e5d',
+    borderRadius: '8px',
+    padding: '1px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    listStyleType: 'circle', // Utilisez listStyleType pour afficher les points
+    textAlign: 'center', // Center-align the content within the ul
 
+  },
+  listItem: {
+    fontSize: '18px',
+    fontWeight: '',
+    marginBottom: '10px',
+    color: '#fff',
+  },
+};
 export default Dashboard;

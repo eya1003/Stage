@@ -6,33 +6,52 @@ const router = express.Router()
 const {  
     getQueueWithParams,
     getAllMessagesFromQueue,
-    getQueueNames,
+    getQueueCount,
+    checkRabbitMQServer,
+    checkEmptyQueues,
+    checkQueueExistence,
+    sendMessageWithDeadLetter,
+    getQueuesWithDLXInfo,
+    sendMessageWithTTL,
+    sendUnroutableMessages,
+    checkUnroutableQueues,
+    processQueueInformation,
+    testRabbitMQServer,
 
 
 } = require('../Controllers/RabbitController.js')
 
 
-const { 
-    getQueueWithName, checkServerStatus, getQueueNamesFromWebSphere,
+const {  checkServerStatus,
 
 
 } = require('../Controllers/IBMWebSphereController.js')
 const { protectSimpleUser } = require("../Middleware/userMiddleware.js")
 
-// Rabbit 
-//router.get('/allMsq',getQueueMessages),
-router.get('/getQueue/:qu',getQueueWithParams),
-router.get('/getMessages/:qu',getAllMessagesFromQueue),
-router.get('/getQueueNames',getQueueNames),
+// config local in code 
 
-// IBM WebSphere
-router.get('/CheckServer',checkServerStatus),
-router.get('/getQu',getQueueNamesFromWebSphere),
+            // Rabbit 
+            //router.get('/allMsq',getQueueMessages),
+            router.get('/getQueue/:qu',getQueueWithParams),
+            router.get('/getMessages/:qu',getAllMessagesFromQueue),
+
+            // IBM WebSphere
+            router.post('/CheckServer',checkServerStatus),
+
+// config from body 
+router.post('/getFromBody',getQueueCount),
+router.post('/check',checkRabbitMQServer),
+router.post('/checkEmpty',checkEmptyQueues),
+router.post('/checkExist',checkQueueExistence),
+router.post('/send',sendMessageWithDeadLetter),
+router.get('/getDLX',getQueuesWithDLXInfo),
+router.post('/sendTTL',sendMessageWithTTL),
+router.post('/sendUnroutable',sendUnroutableMessages),
+router.get('/whyyy',testRabbitMQServer),
+router.get('/checkUnroutable',checkUnroutableQueues),
 
 
-
-
-
+router.get('/checkAll',processQueueInformation),
 
 
 

@@ -107,7 +107,6 @@ function Tables() {
                         <DropdownButton title="Actions">
 
                         <Dropdown.Item href="" onClick={() => {
-                            console.log("Clicked on user with ID:", user._id);
                               if (user.bloque) {
                                   Swal.fire({
                                     title: 'Are you sure?',

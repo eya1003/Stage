@@ -28,9 +28,11 @@ const storedUser = localStorage?.getItem('userData');
 const user = JSON.parse(storedUser);
 
 // Now, the 'user' variable contains the user information
+/*
 console.log(user?._id); // Logs the user's ID
 console.log(user?.firstName); // Logs the user's first name
 console.log(user?.lastName); // Logs the user's last name
+*/
 
   // State variables for the user information that can be edited
   const [firstName, setFirstName] = useState(user?.firstName);
@@ -66,7 +68,7 @@ console.log(user?.lastName); // Logs the user's last name
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("User updated successfully:", data);
+        console.log("User updated successfully:");
         // Handle any other logic after the update, such as showing a success message, etc.
         const storedUser = JSON.parse(localStorage.getItem("userData"));
         const updatedUser = {

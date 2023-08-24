@@ -248,7 +248,7 @@ const forgetPass = async (req, res) => {
 
 
         mailTransport().sendMail({
-          from:"zainebhamdi2013@gmail.com",
+          from:"mon176239@gmail.com",
           to: user.email,
           subject: "Rest Password Mail",
           html: htmlToSend
@@ -351,7 +351,7 @@ const registerUser = asynHandler( async ( req , res )=> {
       })
   if (user) {
     console.log("user created succeffully")
-        /*
+        
       fs.readFile('backend\\Utils\\Template\\email.html', {encoding: 'utf-8'}, function (err, html) {
         if (err) {
           console.log(err);
@@ -364,12 +364,12 @@ const registerUser = asynHandler( async ( req , res )=> {
             };
             var htmlToSend = template(replacements);
     mailTransport().sendMail({
-        from:"zainebhamdi2013@gmail.com",
+        from:"mon176239@gmail.com",
         to: user.email,
         subject: "One Step To Verify Your Account",
         html: htmlToSend
     })}})
-    */
+    
   }
 
 

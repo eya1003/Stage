@@ -90,12 +90,16 @@ function SignInForm() {
             if (!userData){
               console.log("there is no user")
             }
-            if (userData && userData.token) {
+            if (userData ) {
               // Save the user data or token in local storage if needed
               localStorage.setItem("userData", JSON.stringify(userData));
+              navigate("/admin/dashboard");
 
               // Navigate to /admin/dashboard
-              navigate("/admin/dashboard");
+              setTimeout(() => {
+                localStorage.removeItem('userData');
+              }, 240 * 60 * 1000); // 4 hours = 240 minutes * 60 seconds * 1000 milliseconds
+              
             }
                 
               } catch (error) {
@@ -138,8 +142,11 @@ function SignInForm() {
                   }
                 } else {
                   // Handle network errors or other issues
-                  alert('An error occurred during login. Please check your internet connection and try again.');
-                }
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong! Please try again'
+                  })                }
               }
 };
 
