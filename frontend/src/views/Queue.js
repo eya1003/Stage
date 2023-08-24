@@ -27,7 +27,7 @@ function Dashboard() {
   const [queueNames, setQueueNames] = useState([]);
   const [queueState, setQueueState] = useState('');
   const [ibmState, setIbmState] = useState('');
-  const [error, setError] = useState('');
+  const [error, searchQueuesetError] = useState('');
   const [errorGet, setErrorGet] = useState('');
   const [activeSection, setActiveSection] = useState("Rabbit MQ");
 
