@@ -7,7 +7,6 @@ const {
     getQueueWithParams,
     getAllMessagesFromQueue,
     getQueueCount,
-    checkRabbitMQServer,
     checkEmptyQueues,
     checkQueueExistence,
     sendMessageWithDeadLetter,
@@ -40,14 +39,13 @@ const { protectSimpleUser } = require("../Middleware/userMiddleware.js")
 
 // config from body 
 router.post('/getFromBody',getQueueCount),
-router.post('/check',checkRabbitMQServer),
 router.post('/checkEmpty',checkEmptyQueues),
 router.post('/checkExist',checkQueueExistence),
 router.post('/send',sendMessageWithDeadLetter),
 router.get('/getDLX',getQueuesWithDLXInfo),
 router.post('/sendTTL',sendMessageWithTTL),
 router.post('/sendUnroutable',sendUnroutableMessages),
-router.get('/whyyy',testRabbitMQServer),
+router.post('/whyyy',testRabbitMQServer),
 router.get('/checkUnroutable',checkUnroutableQueues),
 
 

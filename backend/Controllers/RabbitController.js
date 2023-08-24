@@ -156,27 +156,37 @@ const getAllMessagesFromQueue = async (req, res) => {
 
 
 
-const checkRabbitMQServer = async (req, res) => {
-  const { rabbitmqHostname, rabbitmqPort, rabbitmqUsername, rabbitmqPassword } = req.body;
 
-  const connectionUrl = `http://${rabbitmqUsername}:${rabbitmqPassword}@${rabbitmqHostname}:${rabbitmqPort}`;
+const checkRabbitMQServer = async (req, res) => {
+  const { rabbitmqHostname, rabbitmqPort } = req.body;
+
+  const managementApiBaseUrl = `http://${rabbitmqHostname}:${rabbitmqPort}/api`;
 
   try {
-    const conn = await amqp.connect(connectionUrl);
-    await conn.close();
-    res.json("Success"); // Send "Success" if the server is up and reachable
-    console.log("server rabbit is up");
+    const response = await axios.get(`${managementApiBaseUrl}/overview`);
+
+    if (response.status === 200) {
+      res.json({ status: "Success", message: "RabbitMQ server is up and reachable" });
+      console.log("RabbitMQ server is up");
+    } else {
+      res.json({ status: "Error", message: "Unknown Error" });
+      console.log("Unknown Error:", response.statusText);
+    }
   } catch (error) {
     if (error.code === 'ECONNREFUSED') {
-      res.status(500).json({ error: "Invalid Hostname" });
-    } else if (error.message.includes("PossibleAuthenticationFailureException")) {
-      res.status(500).json({ error: "Incorrect Password" });
+      res.json({ status: "Error", message: "Invalid Hostname" });
+      console.log("Invalid Hostname");
+    } else if (error.response && error.response.status === 401) {
+      res.json({ status: "Error", message: "Unauthorized" });
+      console.log("Unauthorized");
     } else {
-      res.status(500).json({ error: "Unknown Error" });
+      res.json({ status: "Error", message: "Unknown Error" });
+      console.log("Unknown Error:", error.message);
     }
-    console.log("server rabbit is down");
   }
 };
+
+
 
 const QUEUE_SIZE_THRESHOLD = 100; // Define the threshold for queue size
 const MESSAGE_ERROR_THRESHOLD = 0.1; // Define the threshold for message error rate (10%)
