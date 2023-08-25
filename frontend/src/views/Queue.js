@@ -55,12 +55,24 @@ const handleSubmit = async (event) => {
 
     if (response.data.status === 'Success') {
       Swal.fire('Connect successfully');
-      localStorage.setItem("configTimestamp", new Date().toISOString());
-      localStorage.setItem("rabbitConfig", JSON.stringify(formData));
+
+      const existingConfigs = Object.keys(localStorage).filter(
+        (key) => key.startsWith('rabbitConfig')
+      );
+
+      let newConfigNumber = 1;
+      while (existingConfigs.includes(`rabbitConfig${newConfigNumber}`)) {
+        newConfigNumber++;
+      }
+
+      const newConfigKey = `rabbitConfig${newConfigNumber}`;
+      localStorage.setItem(newConfigKey, JSON.stringify(formData));
+
       navigate("/admin/queue"); // Use the navigate function to redirect
     } else {
       Swal.fire('Unknown Error: ' + response.data);
     }
+
     setMessage(response.data);
 
     setTimeout(() => {
@@ -77,13 +89,12 @@ const handleSubmit = async (event) => {
       localStorage.removeItem('rabbitConfig');
       localStorage.removeItem('configTimestamp');
     }, 4 * 60 * 60 * 1000); // 4 hours in milliseconds
-    // 120000 milliseconds = 2 minutes 
-    
   } catch (error) {
     Swal.fire('Connection Error'); 
     console.error('Error checking RabbitMQ server:', error);
   }
 };
+
 
 // IBM Web sphere
 
