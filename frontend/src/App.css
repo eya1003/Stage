@@ -36,3 +36,81 @@
     transform: rotate(360deg);
   }
 }
+
+.queue-info-table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 2px ;
+  margin-bottom: 20px; /* Add space under the table */
+}
+    .queue-info-table th, .queue-info-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .queue-info-table th {
+      background-color: #f2f2f2;
+    }
+
+    .queue-info-table ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .queue-info-table li {
+      margin-bottom: 5px;
+    }
+    .tick {
+      color: green;
+    }
+    .colored-header {
+      color: #ef8157;
+    }
+/* Add animation classes */
+.animated {
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Add styling for checkmark and X symbols */
+.checkmark {
+  color: #4caf50;
+  animation-name: fadeIn;
+}
+
+.cross {
+  color: #f44336;
+  animation-name: fadeIn;
+}
+    
+.explanations {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  margin-bottom: 20px; /* Add space under the table */
+
+}
+
+.explanations p {
+  margin: 5px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+
+.explanations strong {
+  color: #ef8157;
+
+  font-weight: bold;
+}

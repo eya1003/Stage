@@ -54,14 +54,14 @@ const handleChange = event => {
 const handleSubmit = async (event) => {
   event.preventDefault();
   try {
-    const response = await axios.post('http://localhost:5000/qu/check', {
+    const response = await axios.post('http://localhost:5000/qu/whyyy', {
       rabbitmqHostname: formData.rabbitmqHostname,
       rabbitmqPort: formData.rabbitmqPort,
       rabbitmqUsername: formData.rabbitmqUsername,
       rabbitmqPassword: formData.rabbitmqPassword,
     });
 
-    if (response.data === 'Success') {
+    if (response.data.status === 'Success') {
       Swal.fire('Connect successfully');
       localStorage.setItem("configTimestamp", new Date().toISOString());
       localStorage.setItem("rabbitConfig", JSON.stringify(formData));
@@ -84,7 +84,7 @@ const handleSubmit = async (event) => {
     setTimeout(() => {
       localStorage.removeItem('rabbitConfig');
       localStorage.removeItem('configTimestamp');
-    }, 120000); 
+    }, 4 * 60 * 60 * 1000); // 4 hours in milliseconds
     // 120000 milliseconds = 2 minutes 
     
   } catch (error) {

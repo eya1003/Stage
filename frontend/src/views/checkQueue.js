@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-
+import "../App.css"
 import axios from "axios"; // Import axios library
 // reactstrap components
 import {
@@ -27,75 +27,13 @@ import Swal from "sweetalert2";
 function CheckQueue (){
 
 
-    const [emptyQueues, setEmptyQueues] = useState([]);
     const [error, setError] = useState('');
     const [activeSection, setActiveSection] = useState("Rabbit MQ");
     const navigate = useNavigate(); // Initialize useNavigate
-    const [openDialog, setOpenDialog] = useState(false); // Dialog state
-    const [newPort, setNewPort] = useState(""); // New port value
     const [searchQueue, setSearchQueue] = useState(""); // State to store the search queue value
-    const [queueExists, setQueueExists] = useState('');
-    const [queueInfo, setQueueInfo] = useState(null);
-    const [dialogOpen, setDialogOpen] = useState(false);
+    const [queueExists, setQueueExists] = useState(''); 
     const [Res, setRes] = useState(false);
-
-    const handleCheckEmptyQueues = async () => {
-        const storedConfig = JSON.parse(localStorage.getItem("rabbitConfig"));
-    
-        if (!storedConfig) {
-          setError("RabbitMQ configuration missing");
-          navigate("/admin/configQueue");
-          return;
-        }
-    
-        const { rabbitmqHostname, rabbitmqPort, rabbitmqUsername, rabbitmqPassword } = storedConfig;
-    
-        try {
-          const response = await axios.post("http://localhost:5000/qu/checkEmpty", {
-            rabbitmqHostname,
-            rabbitmqPort,
-            rabbitmqUsername,
-            rabbitmqPassword,
-          });
-          setQueueInfo(response.data);
-          setDialogOpen(true);
-        } catch (error) {
-          {
-            Swal.fire({
-              title: "Error",
-              text: "An error occurred while checking queue existence",
-              icon: "error",
-              confirmButtonText: "Change Port",
-              showCancelButton: "OK",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                Swal.fire({
-                  title: "Change Port",
-                  input: "number",
-                  inputValue: rabbitmqPort,
-                  inputPlaceholder: "Enter new port...",
-                  showCancelButton: true,
-                  confirmButtonText: "Save",
-                }).then((changeResult) => {
-                  if (changeResult.isConfirmed) {
-                    const newPort = changeResult.value;
-        
-                    // Update the port in local storage
-                    const updatedConfig = { ...storedConfig, rabbitmqPort: newPort };
-                    localStorage.setItem("rabbitConfig", JSON.stringify(updatedConfig));
-        
-                  }
-                });
-              }
-            });
-          }
-        }
-      };
-    
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
-           
+  
       const handleCheckQueueExistence = async () => {
         const storedConfig = JSON.parse(localStorage.getItem("rabbitConfig"));
       
@@ -154,25 +92,61 @@ function CheckQueue (){
         }
       };
       
-      const QueueInformationTable = () => {
-        const [queueInfo, setQueueInfo] = useState(null);
-        const rabbitConfig = JSON.parse(localStorage.getItem('rabbitConfig'));
+      const QueueInformationTable = async() => {
 
-        useEffect(() => {
-          axios.get('http://localhost:5000/qu/checkAll',rabbitConfig) // Replace with your API endpoint
-            .then(response => {
-              setRes(response.data);
-            })
-            .catch(error => {
-              console.error('Error fetching queue information:', error);
-            });
-        }, []);
-      
+        const storedConfig = JSON.parse(localStorage.getItem("rabbitConfig"));
+        const { rabbitmqHostname, rabbitmqPort, rabbitmqUsername, rabbitmqPassword } = storedConfig;
+
+        if (!storedConfig) {
+          setError("RabbitMQ configuration missing");
+          navigate("/admin/configQueue");
+          return;
+        }
+        try {
+          const rabbitConfig = JSON.parse(localStorage.getItem('rabbitConfig'));
+    
+          const response = await axios.post('http://localhost:5000/qu/checkAll', rabbitConfig);
+    
+          if (response.status === 200) {
+            setRes(response.data);
+            setError(null);
+          } else {
+            setError('Failed to fetch queue information.');
+          }
+        } catch (error) {
+          {
+            Swal.fire({
+              title: "Error",
+              text: "An error occurred while checking queue existence",
+              icon: "error",
+              confirmButtonText: "Change Port",
+              showCancelButton: "OK",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                Swal.fire({
+                  title: "Change Port",
+                  input: "number",
+                  inputValue: rabbitmqPort,
+                  inputPlaceholder: "Enter new port...",
+                  showCancelButton: true,
+                  confirmButtonText: "Save",
+                }).then((changeResult) => {
+                  if (changeResult.isConfirmed) {
+                    const newPort = changeResult.value;
         
+                    // Update the port in local storage
+                    const updatedConfig = { ...storedConfig, rabbitmqPort: newPort };
+                    localStorage.setItem("rabbitConfig", JSON.stringify(updatedConfig));
+        
+                  }
+                });
+              }
+            });
+          }
+        }
       }
-      const renderIcon = (condition) => {
-        return condition ? '✔️' : '❌'; // You can replace with actual icons or emojis
-      };
+
+
      return (
         <>
 <div className="content" style={{ width: "1500px" }}>
@@ -327,44 +301,74 @@ function CheckQueue (){
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' , marginBottom: '25px'}}>
   <button onClick={QueueInformationTable}>Check Queues</button>
 </div>
-{queueInfo ? (
-        <table>
-          <thead>
-            <tr>
-              <th>Total Queues</th>
-              <th>Total Failed Queues</th>
-              <th>Queue Names</th>
-              <th>Empty</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{queueInfo.totalQueues}</td>
-              <td>{queueInfo.totalFailedQueues}</td>
-              <td>
-                <ul>
-                  {queueInfo.failedQueueNames.map((queueName, index) => (
-                    <li key={index}>
-                      {renderIcon(queueName === '' || queueName === null)} {queueName}
-                    </li>
-                  ))}
-                </ul>
-              </td>
-              <td>
-                <ul>
-                  {queueInfo.emptyQueueNames.map((queueName, index) => (
-                    <li key={index}>
-                      {renderIcon(queueName === '' || queueName === null)} {queueName}
-                    </li>
-                  ))}
-                </ul>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      ) : (
-        <p>Loading...</p>
-      )}
+{Res && (
+  <div>  <table className="queue-info-table">
+    <thead>
+      <tr>
+        <th className="colored-header">Nombre Total</th>
+        <th className="colored-header">Nombre Failed Queue</th>
+        <th className="colored-header">Noms des Queues Failed</th>
+        <th className="colored-header">Empty</th>
+        <th className="colored-header">Undeliverable</th>
+        <th className="colored-header">DLX</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{Res.totalQueues}</td>
+        <td>{Res.totalFailedQueues}</td>
+        <td>
+          <ul>
+            {Res.failedQueueNames.map(queueName => (
+              <li key={queueName}>{queueName}</li>
+            ))}
+          </ul>
+        </td>
+        <td>
+          <ul>
+            {Res.failedQueueNames.map(queueName => (
+              <li key={queueName}>
+                {Res.emptyQueueNames.includes(queueName) ? <span className="animated checkmark">✓</span> : <span className="animated cross">✗</span>}
+              </li>
+            ))}
+          </ul>
+        </td>
+        <td>
+          <ul>
+            {Res.failedQueueNames.map(queueName => (
+              <li key={queueName}>
+                {Res.unroutableQueueNames.includes(queueName) ? <span className="animated checkmark">✓</span> : <span className="animated cross">✗</span>}
+              </li>
+            ))}
+          </ul>
+        </td>
+        <td>
+          <ul>
+            {Res.failedQueueNames.map(queueName => (
+              <li key={queueName}>
+                {Res.dlxQueueNames.includes(queueName) ? <span className="animated checkmark">✓</span> : <span className="animated cross">✗</span>}
+              </li>
+            ))}
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div className="explanations">
+ 
+      <p>
+        <strong >DLX:</strong> Messages that cannot be processed successfully are sent to a Dead Letter Exchange (DLX) configured for this queue.
+      </p>
+      <p>
+        <strong>Unroutable:</strong> Messages that cannot be routed to any consumers because the number of messages exceeds the number of consumers.
+      </p>
+      <p>
+        <strong>Empty:</strong> Queues with no messages waiting to be processed.
+      </p>
+    </div>
+  </div>
+)}
+
         </CardBody>
         </Card>
     </Col>
