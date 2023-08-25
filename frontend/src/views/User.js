@@ -1,44 +1,32 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // reactstrap components
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  CardTitle,
-  FormGroup,
-  Form,
-  Input,
-  Row,
-  Col,
-  Alert,
+import { Button, Card, CardHeader, CardBody, CardFooter, CardTitle, FormGroup,Form,Input, Row, Col, Alert,
 } from "reactstrap";
 import Swal from "sweetalert2";
 
 function User() {
 
   const [msg, setMsg] = useState('');
-
-
 // Retrieve user information from localStorage
 const storedUser = localStorage?.getItem('userData');
 const user = JSON.parse(storedUser);
-
-// Now, the 'user' variable contains the user information
-/*
-console.log(user?._id); // Logs the user's ID
-console.log(user?.firstName); // Logs the user's first name
-console.log(user?.lastName); // Logs the user's last name
-*/
 
   // State variables for the user information that can be edited
   const [firstName, setFirstName] = useState(user?.firstName);
   const [lastName, setLastName] = useState(user?.lastName);
   const [imageUrl, setImageUrl] = useState(user?.imageUrl);
 
+
+   // RabbitMQ configuration states
+   const [rabbitMQHostname, setRabbitMQHostname] = useState('');
+   const [rabbitMQPort, setRabbitMQPort] = useState('');
+   const [rabbitMQUsername, setRabbitMQUsername] = useState('');
+   const [rabbitMQPassword, setRabbitMQPassword] = useState('');
+ 
+   // Editing configuration state
+   const [editingConfigKey, setEditingConfigKey] = useState(null);
   // Function to handle form submission
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -85,10 +73,66 @@ console.log(user?.lastName); // Logs the user's last name
       });
   };
 
+ // RabbitMQ configurations from localStorage
+ const [rabbitConfigs, setRabbitConfigs] = useState([]);
+
+ useEffect(() => {
+   const configs = [];
+   for (let i = 0; i < localStorage.length; i++) {
+     const key = localStorage.key(i);
+     if (key.startsWith('rabbitConfig')) {
+       const config = JSON.parse(localStorage.getItem(key));
+       configs.push({ key, config });
+     }
+   }
+   setRabbitConfigs(configs);
+ }, []);
+
+ const handleRabbitConfigChange = (index, field, value) => {
+  const updatedConfigs = [...rabbitConfigs];
+  updatedConfigs[index].config[field] = value;
+  setRabbitConfigs(updatedConfigs);
+};
+
+
+const handleEditConfig = (index) => {
+  const editedConfig = rabbitConfigs[index].config;
+
+  // Prepare the RabbitMQ configuration data
+  const updatedConfig = {
+    rabbitmqHostname: editedConfig.rabbitmqHostname, // Use the current config's values
+    rabbitmqPort: editedConfig.rabbitmqPort,
+    rabbitmqUsername: editedConfig.rabbitmqUsername,
+    rabbitmqPassword: editedConfig.rabbitmqPassword,
+  };
+
+  // Update the configuration in the state array
+  const updatedConfigs = [...rabbitConfigs];
+  updatedConfigs[index].config = updatedConfig;
+  setRabbitConfigs(updatedConfigs);
+
+  // Update the configuration in localStorage
+  localStorage.setItem(rabbitConfigs[index].key, JSON.stringify(updatedConfig));
+
+  // Clear form inputs
+  setRabbitMQHostname('');
+  setRabbitMQPort('');
+  setRabbitMQUsername('');
+  setRabbitMQPassword('');
+
+  // ... any other logic you might need ...
+
+  Swal.fire('Configuration updated successfully');
+};
+
+
+
   return (
     <>
       <div className="content">
         <Row>
+        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+
           <Col md="4">
             <Card className="card-user">
               <div className="image">
@@ -189,8 +233,65 @@ console.log(user?.lastName); // Logs the user's last name
               </CardBody>
             </Card>
           </Col>
-        </Row>
-      </div>
+          </div>
+          </Row>
+
+          <Row>
+  <Col md="12">
+    <Card className="card-user">
+      <CardHeader>
+        <CardTitle tag="h5">Manage RabbitMQ Configurations</CardTitle>
+      </CardHeader>
+      <CardBody>
+        {rabbitConfigs.map((entry, index) => (
+          <div key={index}>
+            <p>Configuration {entry.key}</p>
+            <Form>
+              <FormGroup>
+                <label>RabbitMQ Hostname</label>
+                <Input
+                  type="text"
+                  value={entry.config.rabbitmqHostname}
+                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqHostname", e.target.value)}
+                />
+              </FormGroup>
+              <FormGroup>
+                <label>RabbitMQ Port</label>
+                <Input
+                  type="text"
+                  value={entry.config.rabbitmqPort}
+                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqPort", e.target.value)}
+                />
+              </FormGroup>
+              <FormGroup>
+                <label>RabbitMQ Username</label>
+                <Input
+                  type="text"
+                  value={entry.config.rabbitmqUsername}
+                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqUsername", e.target.value)}
+                />
+              </FormGroup>
+              <FormGroup>
+                <label>RabbitMQ Password</label>
+                <Input
+                  type="password"
+                  value={entry.config.rabbitmqPassword}
+                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqPassword", e.target.value)}
+                />
+              </FormGroup>
+              <Button className="btn-round" color="primary" onClick={() => handleEditConfig(index)}>
+                Save Configuration
+              </Button>
+            </Form>
+          </div>
+        ))}
+      </CardBody>
+    </Card>
+  </Col>
+</Row>
+
+</div>
+
     </>
   );
 }
