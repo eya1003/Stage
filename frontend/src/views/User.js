@@ -158,8 +158,18 @@ const handleEditConfig = (index) => {
           <Col md="8">
             <Card className="card-user">
               <CardHeader>
-                <CardTitle tag="h5">Edit Profile</CardTitle>
-              </CardHeader>
+              <CardTitle
+  tag="h5"
+  style={{
+    color: "#ef8157",
+    fontSize: "24px", // Adjust the font size as needed
+    borderBottom: "2px solid #ef8157", // Add a border at the bottom
+    paddingBottom: "10px", // Add some spacing after the border
+    marginBottom: "20px", // Add overall margin to separate from other content
+  }}
+>
+  Edit Profile 
+</CardTitle>              </CardHeader>
               <CardBody>
               {msg && <Alert color="success">  <span style={{ fontWeight: 'bold' , fontSize: '14px'}}> {msg}</span> </Alert>}
 
@@ -237,58 +247,126 @@ const handleEditConfig = (index) => {
           </Row>
 
           <Row>
-  <Col md="12">
+  <Col md="8">
     <Card className="card-user">
       <CardHeader>
-        <CardTitle tag="h5">Manage RabbitMQ Configurations</CardTitle>
+        <CardTitle
+          tag="h5"
+          style={{
+            color: "#ef8157",
+            fontSize: "24px", // Adjust the font size as needed
+            borderBottom: "2px solid #ef8157", // Add a border at the bottom
+            paddingBottom: "10px", // Add some spacing after the border
+            marginBottom: "20px", // Add overall margin to separate from other content
+          }}
+        >
+          Manage RabbitMQ Configurations
+        </CardTitle>
       </CardHeader>
       <CardBody>
         {rabbitConfigs.map((entry, index) => (
           <div key={index}>
-            <p>Configuration {entry.key}</p>
+            <p
+              style={{
+                fontSize: "16px", // Adjust the font size as needed
+                color: "#ef8157", // Use your preferred color
+                fontWeight: "bold", // Make the text bold
+                marginTop: "10px", // Add some margin at the top
+                marginBottom: "5px", // Add some margin at the bottom
+              }}
+            >
+              Configuration: {entry.key}
+            </p>
+
             <Form>
-              <FormGroup>
-                <label>RabbitMQ Hostname</label>
-                <Input
-                  type="text"
-                  value={entry.config.rabbitmqHostname}
-                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqHostname", e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <label>RabbitMQ Port</label>
-                <Input
-                  type="text"
-                  value={entry.config.rabbitmqPort}
-                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqPort", e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <label>RabbitMQ Username</label>
-                <Input
-                  type="text"
-                  value={entry.config.rabbitmqUsername}
-                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqUsername", e.target.value)}
-                />
-              </FormGroup>
-              <FormGroup>
-                <label>RabbitMQ Password</label>
-                <Input
-                  type="password"
-                  value={entry.config.rabbitmqPassword}
-                  onChange={(e) => handleRabbitConfigChange(index, "rabbitmqPassword", e.target.value)}
-                />
-              </FormGroup>
-              <Button className="btn-round" color="primary" onClick={() => handleEditConfig(index)}>
+              <Row>
+                <Col md="6">
+                  <FormGroup>
+                    <label>RabbitMQ Hostname</label>
+                    <Input
+                      type="text"
+                      value={entry.config.rabbitmqHostname}
+                      onChange={(e) =>
+                        handleRabbitConfigChange(
+                          index,
+                          "rabbitmqHostname",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md="6">
+                  <FormGroup>
+                    <label>RabbitMQ Port</label>
+                    <Input
+                      type="text"
+                      value={entry.config.rabbitmqPort}
+                      onChange={(e) =>
+                        handleRabbitConfigChange(index, "rabbitmqPort", e.target.value)
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+              </Row>
+              <Row>
+                <Col md="6">
+                  <FormGroup>
+                    <label>RabbitMQ Username</label>
+                    <Input
+                      type="text"
+                      value={entry.config.rabbitmqUsername}
+                      onChange={(e) =>
+                        handleRabbitConfigChange(
+                          index,
+                          "rabbitmqUsername",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md="6">
+                  <FormGroup>
+                    <label>RabbitMQ Password</label>
+                    <Input
+                      type="password"
+                      value={entry.config.rabbitmqPassword}
+                      onChange={(e) =>
+                        handleRabbitConfigChange(
+                          index,
+                          "rabbitmqPassword",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </FormGroup>
+                </Col>
+              </Row>
+              <Button
+                className="btn-round"
+                color="primary"
+                onClick={() => handleEditConfig(index)}
+              >
                 Save Configuration
               </Button>
             </Form>
+            {index !== rabbitConfigs.length - 1 && (
+              <hr
+                style={{
+                  margin: "20px 0", // Add some spacing above and below the divider
+                  borderColor: "#ef8157", // Use your preferred color
+                }}
+              />
+            )}
           </div>
         ))}
       </CardBody>
     </Card>
   </Col>
 </Row>
+
+
 
 </div>
 
