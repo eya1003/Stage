@@ -126,6 +126,32 @@ const handleEditConfig = (index) => {
 };
 
 
+const handleDeleteConfig = (index) => {
+  const configKey = rabbitConfigs[index].key;
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Remove the configuration from the state array
+      const updatedConfigs = rabbitConfigs.filter((_, i) => i !== index);
+      setRabbitConfigs(updatedConfigs);
+
+      // Remove the configuration from localStorage
+      localStorage.removeItem(configKey);
+
+      Swal.fire('Configuration deleted successfully', '', 'success');
+    }
+  });
+};
+
+
 
   return (
     <>
@@ -343,6 +369,7 @@ const handleEditConfig = (index) => {
                   </FormGroup>
                 </Col>
               </Row>
+              <div>
               <Button
                 className="btn-round"
                 color="primary"
@@ -350,6 +377,14 @@ const handleEditConfig = (index) => {
               >
                 Save Configuration
               </Button>
+              <Button
+                className="btn-round" style={{  backgroundColor:"#ef8157"              }}
+                onClick={() => handleDeleteConfig(index)}
+              >
+                DELETE
+              </Button>
+              </div>
+             
             </Form>
             {index !== rabbitConfigs.length - 1 && (
               <hr
