@@ -15,25 +15,17 @@ import {
   Col,
 } from "reactstrap";
 import axios from "axios"; // Import axios library
-
-
 import { Navigate, useNavigate } from "react-router-dom";
 
 function Dashboard() {
 
   const [activeSection, setActiveSection] = useState("Rabbit MQ");
-
-  const [err, setErr] = useState('');
-  const [rabbitMQConfig, setRabbitMQConfig] = useState(null);
-
   const [host, setHost] = useState('');
   const [adminPort, setAdminPort] = useState('');
   const [serverStatus, setServerStatus] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [message, setMessage] = useState(null); // Initialize the message state
-  
   const navigate= useNavigate()
-
 
 // Rabbit MQ from body
 const [formData, setFormData] = useState({
@@ -93,10 +85,6 @@ const handleSubmit = async (event) => {
   }
 };
 
-
-
-
-
 // IBM Web sphere
 
 const handleSubmitIBM = async (event) => {
@@ -127,9 +115,6 @@ const handleSubmitIBM = async (event) => {
     Swal.fire('Connection Error'); 
   }
 };
-
-
-
 
   return (
     <>
@@ -240,8 +225,6 @@ const handleSubmitIBM = async (event) => {
           </div>
               </Row>
 
-              
-
               <Row className="mt-4 justify-content-center">
    
       <form onSubmit={handleSubmit}>
@@ -262,8 +245,7 @@ const handleSubmitIBM = async (event) => {
           <input type="password" name="rabbitmqPassword" required value={formData.rabbitmqPassword} onChange={handleChange} />
         </label>
         <button type="submit">Check server</button>
-      </form>
-     
+      </form> 
 
       <Col md="8">
         <div className="queue-list-container" style={{ marginTop:"15px"}}>
@@ -275,17 +257,14 @@ const handleSubmitIBM = async (event) => {
           </ul>
         </div>
       </Col>
-    </Row>
-
-            
+    </Row>            
             </CardBody>
           </Card>
         </Col>
           </Col>            
         )}
 
-
-        {activeSection === "IBM WebSphere" && (
+       {activeSection === "IBM WebSphere" && (
                   <Col lg="28" >
                     <Col lg="8" >
 
