@@ -165,9 +165,6 @@ function Dashboard() {
       <p style={{ marginBottom: '5px' }}>
         <span style={{ fontWeight: 'bold' }}>RabbitMQ Username:</span> {failedConfig.config.rabbitmqUsername}
       </p>
-      <p style={{ marginBottom: '5px' }}>
-        <span style={{ fontWeight: 'bold' }}>RabbitMQ Password:</span> {failedConfig.config.rabbitmqPassword}
-      </p>
     </li>
   ))}
 </ul>
