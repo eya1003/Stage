@@ -651,7 +651,9 @@ const checkAllConfig = async (req, res) => {
   }
 
   res.json(failedConfigs);
-}
+};
+
+
 
 module.exports = {
   //config code

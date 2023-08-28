@@ -235,9 +235,7 @@ const handleSubmitIBM = async (event) => {
             </Card>
           </Col>
         </Row>
-
-
-        {activeSection === "Rabbit MQ" && (
+     {activeSection === "Rabbit MQ" && (
 
           <Col lg="28" >
             
@@ -262,7 +260,15 @@ const handleSubmitIBM = async (event) => {
         </label>
         <label>
           Port:
-          <input type="text" name="rabbitmqPort" required value={formData.rabbitmqPort} onChange={handleChange} />
+          <input type="text" name="rabbitmqPort" required value={formData.rabbitmqPort} onChange={handleChange} style={{
+              padding: '10px',
+              width: '100%',
+              marginBottom: '15px',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              fontSize: 'px', // Increase the font size
+              padding: '10px', 
+          }} />
         </label>
         <label>
           Username:

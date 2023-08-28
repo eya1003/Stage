@@ -218,7 +218,6 @@ const QueueInformationTable = async() => {
         {activeSection === "Rabbit MQ" && (
 
 <Col lg="28" >
-  {/* this part about search queue with name */}
 <Col lg="8" >
         <Card className="card-stats" >
         <CardBody>

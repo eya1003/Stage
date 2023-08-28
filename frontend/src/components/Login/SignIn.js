@@ -15,8 +15,7 @@ function SignInForm() {
   const [user, setUser] = useState([]);
 
    const {emailToken}=useParams()
-  console.log(emailToken)
-
+  
     // New function to handle email verification
     const handleEmailVerification = async () => {
       try {

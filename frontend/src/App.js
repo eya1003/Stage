@@ -1,12 +1,12 @@
 
 import Dashboard from "views/Dashboard.js";
 import Email from "views/Email";
-import TableList from "views/Tables.js";
 import UserPage from "views/User.js";
 import QueuePage from "views/checkQueue";
 import QueueِConfig from "views/Queue";
 import FileConfig from "views/File";
 import FilePage from "views/CheckFiles";
+import UsersList from "views/UsersList";
 import { Navigate } from "react-router-dom";
 
 const storedUser = localStorage?.getItem('userData');
@@ -59,26 +59,20 @@ var routes = [
     component: userLoggedIn ? <Email /> : <Navigate to="/login" />, 
     layout: "/admin",
   },
+  {
+    path: "/list",
+    name: "Users List",
+    icon: "nc-icon nc-bank",
+    component: userLoggedIn ? <UsersList /> : <Navigate to="/login" />, 
+    layout: "/admin",
+  },
   
   {
     path: "/user-page",
     name: "User Profile",
     icon: "nc-icon nc-single-02",
-    component: userLoggedIn ? <UserPage /> : <Navigate to="/login" />,
+    component: <UserPage />,
     layout: "/admin",
   },
- 
-  ...(isAdmin
-    ? [
-        {
-          path: "/tables",
-          name: "Users List",
-          icon: "nc-icon nc-tile-56",
-          component: <TableList />,
-          layout: "/admin",
-        },
-      ]
-    : []),
- 
 ];
 export default routes;
