@@ -1,4 +1,5 @@
 
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 // reactstrap components
@@ -94,36 +95,50 @@ const user = JSON.parse(storedUser);
   setRabbitConfigs(updatedConfigs);
 };
 
-
-const handleEditConfig = (index) => {
+const handleEditConfig = async (index) => {
   const editedConfig = rabbitConfigs[index].config;
 
   // Prepare the RabbitMQ configuration data
   const updatedConfig = {
-    rabbitmqHostname: editedConfig.rabbitmqHostname, // Use the current config's values
+    rabbitmqHostname: editedConfig.rabbitmqHostname,
     rabbitmqPort: editedConfig.rabbitmqPort,
     rabbitmqUsername: editedConfig.rabbitmqUsername,
     rabbitmqPassword: editedConfig.rabbitmqPassword,
   };
 
-  // Update the configuration in the state array
-  const updatedConfigs = [...rabbitConfigs];
-  updatedConfigs[index].config = updatedConfig;
-  setRabbitConfigs(updatedConfigs);
+  try {
+    const response = await axios.post('http://localhost:5000/qu/whyyy', updatedConfig);
 
-  // Update the configuration in localStorage
-  localStorage.setItem(rabbitConfigs[index].key, JSON.stringify(updatedConfig));
+    if (response.data.status === 'Success') {
+      // Update the configuration in the state array
+      const updatedConfigs = [...rabbitConfigs];
+      updatedConfigs[index].config = updatedConfig;
+      setRabbitConfigs(updatedConfigs);
 
-  // Clear form inputs
-  setRabbitMQHostname('');
-  setRabbitMQPort('');
-  setRabbitMQUsername('');
-  setRabbitMQPassword('');
+      // Update the configuration in localStorage
+      localStorage.setItem(rabbitConfigs[index].key, JSON.stringify(updatedConfig));
 
-  // ... any other logic you might need ...
+      // ... any other logic you might need ...
 
-  Swal.fire('Configuration updated successfully');
+      Swal.fire('Configuration updated successfully');
+    } else {
+      // Show Swal message for connection error
+      Swal.fire({
+        icon: 'error',
+        title: 'Connection Error',
+        text: 'An error occurred while checking RabbitMQ server.',
+      });
+    }
+  } catch (error) {
+    // Show Swal message for connection error
+    Swal.fire({
+      icon: 'error',
+      title: 'Connection Error',
+      text: 'An error occurred while checking RabbitMQ server.',
+    });
+  }
 };
+
 
 
 const handleDeleteConfig = (index) => {
