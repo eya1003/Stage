@@ -16,6 +16,7 @@ const {
     checkUnroutableQueues,
     processQueueInformation,
     testRabbitMQServer,
+    checkAllConfig,
 
 
 } = require('../Controllers/RabbitController.js')
@@ -49,7 +50,8 @@ router.post('/whyyy',testRabbitMQServer),
 router.get('/checkUnroutable',checkUnroutableQueues),
 
 
-router.get('/checkAll',processQueueInformation),
+router.post('/checkAll',processQueueInformation),
+router.post('/checkConfigs',checkAllConfig),
 
 
 

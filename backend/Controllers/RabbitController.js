@@ -623,13 +623,35 @@ const testRabbitMQServer = async (req,res) => {
   try {
     const conn = await amqp.connect(connectionUrl);
     await conn.close();
-    res.json({ status: "Success", message: "RabbitMQ server is up and reachable" });
+    res.json({ status: "Success" });
   } catch (error) {
     console.error('Error:', error);
-    res.json({ status: "Error", message: "Connection Error", details: error.message });
+    res.json("Connection to RabbitMQ server failed. Please check your server details and try again." );
   }
 }
 
+const checkAllConfig = async (req, res) => {
+  const rabbitConfigs = req.body;
+
+  const failedConfigs = [];
+
+  for (const [index, config] of rabbitConfigs.entries()) {
+    try {
+      const connection = await amqp.connect({
+        hostname: config.rabbitmqHostname,
+        port: config.rabbitmqPort,
+        username: config.rabbitmqUsername,
+        password: config.rabbitmqPassword,
+      });
+
+      await connection.close();
+    } catch (error) {
+      failedConfigs.push({ config });
+    }
+  }
+
+  res.json(failedConfigs);
+}
 
 module.exports = {
   //config code
@@ -645,11 +667,10 @@ module.exports = {
   sendMessageWithTTL,
   sendUnroutableMessages,
   checkUnroutableQueues,
-
+  testRabbitMQServer,
 
   processQueueInformation,
-
-  testRabbitMQServer
+  checkAllConfig
   
 
 };
