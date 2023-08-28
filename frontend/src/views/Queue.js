@@ -56,21 +56,34 @@ const handleSubmit = async (event) => {
     if (response.data.status === 'Success') {
       Swal.fire('Connect successfully');
 
+      const configNumber = localStorage.getItem('configNumber') || 0;
+      const newConfigKey = `rabbitConfig${configNumber + 1}`;
       const existingConfigs = Object.keys(localStorage).filter(
         (key) => key.startsWith('rabbitConfig')
       );
 
-      let newConfigNumber = 1;
-      while (existingConfigs.includes(`rabbitConfig${newConfigNumber}`)) {
-        newConfigNumber++;
-      }
+      const isDuplicate = existingConfigs.some((key) =>
+        JSON.stringify(formData) === localStorage.getItem(key)
+      );
 
-      const newConfigKey = `rabbitConfig${newConfigNumber}`;
-      localStorage.setItem(newConfigKey, JSON.stringify(formData));
+      if (!isDuplicate) {
+        localStorage.setItem(newConfigKey, JSON.stringify(formData));
+        localStorage.setItem('configNumber', configNumber + 1);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Already Exist',
+        });
+      }
 
       navigate("/admin/queue"); // Use the navigate function to redirect
     } else {
-      Swal.fire('Unknown Error: ' + response.data);
+      // Show Swal message for error
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while connecting.',
+      });
     }
 
     setMessage(response.data);
@@ -90,15 +103,19 @@ const handleSubmit = async (event) => {
       localStorage.removeItem('configTimestamp');
     }, 4 * 60 * 60 * 1000); // 4 hours in milliseconds
   } catch (error) {
-    Swal.fire('Connection Error'); 
+    // Show Swal message for connection error
+    Swal.fire({
+      icon: 'error',
+      title: 'Connection Error',
+      text: 'An error occurred while checking RabbitMQ server.',
+    });
     console.error('Error checking RabbitMQ server:', error);
   }
 };
 
-
 // IBM Web sphere
 
-const handleSubmitIBM = async (event) => {
+const handleSubmitIBM = async (event) => { 
   event.preventDefault();
 
   try {

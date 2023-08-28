@@ -6,11 +6,19 @@ function SignUpForm() {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const navigate = useNavigate();
   const { emailToken } = useParams(); // Get the emailToken from the URL using useParams
 
+  const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,24}$/;
+
   const handleResetPassword = async () => {
+    if (!PWD_REGEX.test(newPassword)) {
+      setPasswordError("Password must contain at least one lowercase letter, one uppercase letter, one digit, and be 8 to 24 characters long.");
+      return;
+    }
+
     try {
       const response = await axios.put(
         `http://localhost:5000/user/reset-password/${emailToken}`,
@@ -20,7 +28,7 @@ function SignUpForm() {
         }
       );
       setMessage(response.data.message);
-      navigate("/login")
+      navigate("/login");
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.message);
@@ -44,18 +52,18 @@ function SignUpForm() {
           title="Invalid email address format."
           required
           value={email}
-          onChange={(e) => setEmail(e.target.value)} // Add the onChange handler to update the state
+          onChange={(e) => setEmail(e.target.value)}
         />
         <input
           style={{ marginTop: "28px" }}
           type="password"
           name="password"
           placeholder="New Password"
-          title="Password must be between 8 and 24 characters and contain at least one lowercase letter, one uppercase letter, and one digit."
           required
           value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)} // Add the onChange handler to update the state
+          onChange={(e) => setNewPassword(e.target.value)}
         />
+        {passwordError && <p style={{ color: "red" }}>{passwordError}</p>}
         <button
           style={{ marginTop: "28px" }}
           type="button"

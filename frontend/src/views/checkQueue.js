@@ -34,67 +34,22 @@ function CheckQueue (){
     const [queueExists, setQueueExists] = useState(''); 
     const [Res, setRes] = useState(false);
   
-      const handleCheckQueueExistence = async () => {
-        const storedConfig = JSON.parse(localStorage.getItem("rabbitConfig"));
-      
-        if (!storedConfig) {
-          console.error("RabbitMQ configuration missing");
-          return;
-        }
-      
-        const { rabbitmqHostname, rabbitmqPort, rabbitmqUsername, rabbitmqPassword } = storedConfig;
-      
-        try {
-          const response = await axios.post("http://localhost:5000/qu/checkExist", {
-            rabbitmqHostname,
-            rabbitmqPort,
-            rabbitmqUsername,
-            rabbitmqPassword,
-            qu: searchQueue,
-          });
-      
-          setQueueExists(response.data.exists);
-      
-          setTimeout(() => {
-            setQueueExists(null);
-            setSearchQueue(""); // Clear the input field after searching
-          }, 30000);
-      
-          console.log(queueExists);
-        } catch (error) {
-          Swal.fire({
-            title: "Error",
-            text: "An error occurred while checking queue existence",
-            icon: "error",
-            confirmButtonText: "Change Port",
-            showCancelButton: "OK",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              Swal.fire({
-                title: "Change Port",
-                input: "number",
-                inputValue: rabbitmqPort,
-                inputPlaceholder: "Enter new port...",
-                showCancelButton: true,
-                confirmButtonText: "Save",
-              }).then((changeResult) => {
-                if (changeResult.isConfirmed) {
-                  const newPort = changeResult.value;
-      
-                  // Update the port in local storage
-                  const updatedConfig = { ...storedConfig, rabbitmqPort: newPort };
-                  localStorage.setItem("rabbitConfig", JSON.stringify(updatedConfig));
-      
-                }
-              });
-            }
-          });
-        }
-      };
-      
-      const QueueInformationTable = async() => {
+    const [configurations, setConfigurations] = useState([]);
 
-        const storedConfig = JSON.parse(localStorage.getItem("rabbitConfig"));
+  useEffect(() => {
+    // Retrieve configurations from localStorage
+    const existingConfigs = Object.keys(localStorage).filter(
+      (key) => key.startsWith('rabbitConfig')
+    );
+    const configData = existingConfigs.map((configKey) => {
+      return { key: configKey, data: JSON.parse(localStorage.getItem(configKey)) };
+    });
+    setConfigurations(configData);
+  }, []);
+      
+const QueueInformationTable = async() => {
+
+        const storedConfig = JSON.parse(localStorage.getItem("chosenConfig"));
         const { rabbitmqHostname, rabbitmqPort, rabbitmqUsername, rabbitmqPassword } = storedConfig;
 
         if (!storedConfig) {
@@ -103,7 +58,7 @@ function CheckQueue (){
           return;
         }
         try {
-          const rabbitConfig = JSON.parse(localStorage.getItem('rabbitConfig'));
+          const rabbitConfig = JSON.parse(localStorage.getItem('chosenConfig'));
     
           const response = await axios.post('http://localhost:5000/qu/checkAll', rabbitConfig);
     
@@ -136,7 +91,7 @@ function CheckQueue (){
         
                     // Update the port in local storage
                     const updatedConfig = { ...storedConfig, rabbitmqPort: newPort };
-                    localStorage.setItem("rabbitConfig", JSON.stringify(updatedConfig));
+                    localStorage.setItem("chosenConfig", JSON.stringify(updatedConfig));
         
                   }
                 });
@@ -146,6 +101,27 @@ function CheckQueue (){
         }
       }
 
+      const handleChooseConfig = (config) => {
+        // Show a confirmation dialog using Swal
+        Swal.fire({
+          title: 'Choose Configuration',
+          text: 'Are you sure you want to choose this configuration?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, choose it!',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Save the chosen configuration to localStorage
+            localStorage.setItem('chosenConfig', JSON.stringify(config));
+            // You can add any other logic you want here
+            Swal.fire('Chosen!', 'The configuration has been chosen.', 'success');
+          }
+        });
+      };
+      
+      
 
      return (
         <>
@@ -247,45 +223,42 @@ function CheckQueue (){
         <Card className="card-stats" >
         <CardBody>
            
-        <Row style={{  justifyContent: 'center'}}>
-              <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px', marginBottom: '50px' }}>
-            <CardTitle tag="h3" style={{ color: '#666', fontSize: '24px', fontWeight: ' ' }}>
-            Use the input field to check if the queue name exists.       
-            </CardTitle>
-            <p style={{ color: '#666', fontSize: '18px' }}>
-            </p>
-          </div>
-                <Col md="8" xs="7">
-                  
-                  <div className="numbers">
-                  <CardTitle tag="p"  >
-                      <Input
-                        placeholder="Enter queue name..."
-                        value={searchQueue}
-                        onChange={(e) => setSearchQueue(e.target.value)}
-                        style={{
-                          borderRadius: '5px',
-                          border: '1px solid #ccc',
-                          padding: '10px',
-                          fontSize: '16px',
-                          width: '100%',
-                        }}
-                        required
-                      />
-                    </CardTitle>
-                    <p />
-                  </div>
-                </Col>
-                  <Col md="4" xs="5" style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <Button style={{ backgroundColor: "#f17e5d", fontSize: '18px', fontWeight: 'bold', padding: '10px 50px' , marginTop:"19px"}} onClick={handleCheckQueueExistence}>
-                    Search
-                  </Button>
-                </Col>
-                <Alert color={queueExists ? "success" : "danger"} style={{ marginTop: '20px', textAlign: 'left', padding: '10px', borderRadius: '5px', fontWeight: 'bold' }}>
-          {queueExists ? "Queue exists" : "Queue does not exist"}
-        </Alert>
+        <Row >
+  <div className="welcome-message" style={{ textAlign: 'center' }}>
+    <CardTitle tag="h3" style={{ color: '#51bcda', fontSize: '24px', fontWeight: 'bold', marginLeft:"15px" }}>
+      Stored Configurations
+    </CardTitle>
+  </div>
 
-         </Row>
+  <Col  style={{ marginTop: "50px", marginLeft: "-250px" ,marginRight:"40px"}}>
+  <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap' }}>
+    {configurations.map((config, index) => (
+      <li
+        key={config.key}
+        style={{
+          border: '1px solid #ccc',
+          padding: '20px', // Increase padding for more spacing inside the box
+          marginBottom: '30px', // Increase margin bottom for more spacing between boxes
+          backgroundColor: '#f9f9f9',
+          width: 'calc(50% - 10px)', // Increase the width of the boxes
+          marginRight: index % 2 === 0 ? '20px' : '0', // Add margin to separate boxes
+        }}
+      >
+        <strong>RabbitMQ Hostname:</strong> {config.data.rabbitmqHostname}<br />
+        <strong>RabbitMQ Port:</strong> {config.data.rabbitmqPort}<br />
+        <strong>RabbitMQ Username:</strong> {config.data.rabbitmqUsername}<br />
+        {/* You can add more fields here */}
+        <button
+                  onClick={() => handleChooseConfig(config)}
+                  >Choose</button>
+      </li>
+    ))}
+  </ul>
+</Col>
+
+
+</Row>
+
 
         </CardBody>
         </Card>

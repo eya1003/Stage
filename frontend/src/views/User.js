@@ -301,7 +301,7 @@ const handleDeleteConfig = (index) => {
                 marginBottom: "5px", // Add some margin at the bottom
               }}
             >
-              Configuration: {entry.key}
+              Configuration
             </p>
 
             <Form>
