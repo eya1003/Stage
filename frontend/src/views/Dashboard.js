@@ -26,8 +26,29 @@ import {
 import axios from "axios"; // Import axios library
 
 function Dashboard() {
-  
 
+
+ const [failedConfigs, setFailedConfigs] = useState([]);
+
+ const handleCheckConfigs = async () => {
+  try {
+    const storedConfigs = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('rabbitConfig')) {
+        const config = JSON.parse(localStorage.getItem(key));
+        storedConfigs.push(config);
+      }
+    }
+
+    const response = await axios.post('http://localhost:5000/qu/checkConfigs', storedConfigs);
+    setFailedConfigs(response.data);
+  } catch (error) {
+    console.error('Error checking configurations:', error);
+  }
+};
+
+  
 
   return (
     <>
@@ -86,87 +107,79 @@ function Dashboard() {
               </CardFooter>
             </Card>
           </Col>
-        
+          <Col lg="4" md="4" sm="4">
+            <Card className="card-stats">
+              <CardBody>
+                <Row>
+                  <Col md="4" xs="5">
+                    <div className="icon-big text-center icon-warning">
+                      <i className="nc-icon nc-globe text-warning" />
+                    </div>
+                  </Col>
+                  <Col md="8" xs="7">
+                    <div className="numbers">
+                      <p className="card-category">FTP</p>
+                      <CardTitle tag="p">File Zilla</CardTitle>
+                      <p />
+                    </div>
+                  </Col>
+                </Row>
+              </CardBody>
+              <CardFooter>
+                <hr />
+                <div className="stats">
+                  <i className="fas fa-sync-alt" /> Port 21
+                </div>
+              </CardFooter>
+            </Card>
+          </Col>
+          
         </Row>
        
-        <Row>
-          <Col >
-            <Card>
-              <CardHeader>
-                <CardTitle tag="h5">Users Behavior</CardTitle>
-                <p className="card-category">24 Hours performance</p>
-              </CardHeader>
-              <CardBody>
-                <Line
-                  data={dashboard24HoursPerformanceChart.data}
-                  options={dashboard24HoursPerformanceChart.options}
-                  width={400}
-                  height={100}
-                />
-              </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="fa fa-history" /> Updated 3 minutes ago
-                </div>
-              </CardFooter>
-            </Card>
-          </Col>
-        </Row>
-        <Row>
-          <Col md="8">
-            <Card>
-              <CardHeader>
-                <CardTitle tag="h5">Email Statistics</CardTitle>
-                <p className="card-category">Last Campaign Performance</p>
-              </CardHeader>
-              <CardBody style={{ height: "266px" }}>
-                <Pie
-                  data={dashboardEmailStatisticsChart.data}
-                  options={dashboardEmailStatisticsChart.options}
-                />
-              </CardBody>
-              <CardFooter>
-                <div className="legend">
-                  <i className="fa fa-circle text-primary" /> Opened{" "}
-                  <i className="fa fa-circle text-warning" /> Read{" "}
-                  <i className="fa fa-circle text-danger" /> Deleted{" "}
-                  <i className="fa fa-circle text-gray" /> Unopened
-                </div>
-                <hr />
-                <div className="stats">
-                  <i className="fa fa-calendar" /> Number of emails sent
-                </div>
-              </CardFooter>
-            </Card>
-          </Col>
-          <Col md="12">
-            <Card className="card-chart">
-              <CardHeader>
-                <CardTitle tag="h5">NASDAQ: AAPL</CardTitle>
-                <p className="card-category">Line Chart with Points</p>
-              </CardHeader>
-              <CardBody>
-                <Line
-                  data={dashboardNASDAQChart.data}
-                  options={dashboardNASDAQChart.options}
-                  width={400}
-                  height={100}
-                />
-              </CardBody>
-              <CardFooter>
-                <div className="chart-legend">
-                  <i className="fa fa-circle text-info" /> Tesla Model S{" "}
-                  <i className="fa fa-circle text-warning" /> BMW 5 Series
-                </div>
-                <hr />
-                <div className="card-stats">
-                  <i className="fa fa-check" /> Data information certified
-                </div>
-              </CardFooter>
-            </Card>
-          </Col>
-        </Row>
+        <div className="content" style={{ marginTop: "", width: "1500px" }} >
+      
+        <Col lg="8">
+  <Card className="card-stats">
+    <CardBody>
+      <div className="welcome-message" style={{ textAlign: 'center' }}>
+        <CardTitle tag="h3" style={{ color: '#51bcda', fontSize: '24px', fontWeight: 'bold', marginLeft: '15px' }}>
+          Check All Configurations
+        </CardTitle>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom: '25px' }}>
+        <button onClick={handleCheckConfigs}>Check Config</button>
+      </div>
+
+      <div>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+  {failedConfigs.map((failedConfig, index) => (
+    <li key={index} style={{ marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>
+      <h4 style={{ color: '#FF5733', marginBottom: '5px', fontWeight: 'bold' }}>Failed Configuration:</h4>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5', padding: '5px', borderRadius: '5px' }}>RabbitMQ Hostname:</span> {failedConfig.config.rabbitmqHostname}
+      </p>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold' }}>RabbitMQ Port:</span> {failedConfig.config.rabbitmqPort}
+      </p>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold' }}>RabbitMQ Username:</span> {failedConfig.config.rabbitmqUsername}
+      </p>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold' }}>RabbitMQ Password:</span> {failedConfig.config.rabbitmqPassword}
+      </p>
+    </li>
+  ))}
+</ul>
+
+</div>
+
+
+    </CardBody>
+  </Card>
+</Col>
+   
+</div>
       </div>
     </>
   );
