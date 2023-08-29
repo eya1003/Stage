@@ -16,11 +16,6 @@ import {
   } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import { Typography, Button, TextField, DialogContentText } from '@material-ui/core';
 import Swal from "sweetalert2";
 
 
@@ -30,9 +25,8 @@ function CheckQueue (){
     const [error, setError] = useState('');
     const [activeSection, setActiveSection] = useState("Rabbit MQ");
     const navigate = useNavigate(); // Initialize useNavigate
-    const [searchQueue, setSearchQueue] = useState(""); // State to store the search queue value
-    const [queueExists, setQueueExists] = useState(''); 
     const [Res, setRes] = useState(false);
+
   
     const [configurations, setConfigurations] = useState([]);
 
@@ -46,62 +40,58 @@ function CheckQueue (){
     });
     setConfigurations(configData);
   }, []);
-      
-const QueueInformationTable = async() => {
 
-        const storedConfig = JSON.parse(localStorage.getItem("chosenConfig"));
-        const { rabbitmqHostname, rabbitmqPort, rabbitmqUsername, rabbitmqPassword } = storedConfig;
 
-        if (!storedConfig) {
-          setError("RabbitMQ configuration missing");
-          navigate("/admin/configQueue");
-          return;
-        }
-        try {
-          const rabbitConfig = JSON.parse(localStorage.getItem('chosenConfig'));
-    
-          const response = await axios.post('http://localhost:5000/qu/checkAll', rabbitConfig);
-    
-          if (response.status === 200) {
-            setRes(response.data);
-            setError(null);
-          } else {
-            setError('Failed to fetch queue information.');
-          }
-        } catch (error) {
-          {
-            Swal.fire({
-              title: "Error",
-              text: "An error occurred while checking queue existence",
-              icon: "error",
-              confirmButtonText: "Change Port",
-              showCancelButton: "OK",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                Swal.fire({
-                  title: "Change Port",
-                  input: "number",
-                  inputValue: rabbitmqPort,
-                  inputPlaceholder: "Enter new port...",
-                  showCancelButton: true,
-                  confirmButtonText: "Save",
-                }).then((changeResult) => {
-                  if (changeResult.isConfirmed) {
-                    const newPort = changeResult.value;
-        
-                    // Update the port in local storage
-                    const updatedConfig = { ...storedConfig, rabbitmqPort: newPort };
-                    localStorage.setItem("chosenConfig", JSON.stringify(updatedConfig));
-        
-                  }
-                });
-              }
-            });
-          }
-        }
+  const QueueInformationTable = async () => {
+    try {
+      const storedConfig = JSON.parse(localStorage.getItem('chosenConfig'));
+
+      if (!storedConfig&& !storedConfig.data) {
+        Swal.fire({
+          title: "Error",
+          text: "Stored configuration not found",
+          icon: "error",
+            })
       }
 
-      const handleChooseConfig = (config) => {
+      const response = await axios.post('http://localhost:5000/qu/checkAll', storedConfig.data);
+
+      if (response.status === 200) {
+        setRes(response.data);
+        setError(null);
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "An error occurred while checking queue ",
+          icon: "error",
+            })      }
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: "An error occurred while checking queue ",
+        icon: "error",
+          })
+            }
+  };
+
+  const handleCheckAll = async () => {
+    setRes(null); // Clear previous response
+    setError(null); // Clear previous error
+
+    // Introduce a 5-second delay
+    setTimeout(async () => {
+      await QueueInformationTable();
+
+      if (error) {
+        Swal.fire({
+          title: 'Error',
+          text: error,
+          icon: 'error',
+        });
+      }
+    }, 1000); // 5000 milliseconds = 5 seconds
+  };
+const handleChooseConfig = (config) => {
         // Show a confirmation dialog using Swal
         Swal.fire({
           title: 'Choose Configuration',
@@ -250,6 +240,8 @@ const QueueInformationTable = async() => {
         <button
                   onClick={() => handleChooseConfig(config)}
                   >Choose</button>
+                      
+
       </li>
     ))}
   </ul>
@@ -271,7 +263,7 @@ const QueueInformationTable = async() => {
         <Card className="card-stats" >
         <CardBody>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' , marginBottom: '25px'}}>
-  <button onClick={QueueInformationTable}>Check Queues</button>
+  <button onClick={handleCheckAll}>Check Queues</button>
 </div>
 {Res && (
   <div>  <table className="queue-info-table">
@@ -360,3 +352,4 @@ const QueueInformationTable = async() => {
 }
 
 export default CheckQueue;
+ 

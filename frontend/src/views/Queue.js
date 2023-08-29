@@ -52,32 +52,23 @@ const handleSubmit = async (event) => {
       rabbitmqUsername: formData.rabbitmqUsername,
       rabbitmqPassword: formData.rabbitmqPassword,
     });
-
     if (response.data.status === 'Success') {
-      Swal.fire('Connect successfully');
-
-      const configNumber = localStorage.getItem('configNumber') || 0;
+      const configNumber = parseInt(localStorage.getItem('configNumber'), 10) || 0;
       const newConfigKey = `rabbitConfig${configNumber + 1}`;
       const existingConfigs = Object.keys(localStorage).filter(
         (key) => key.startsWith('rabbitConfig')
       );
-
       const isDuplicate = existingConfigs.some((key) =>
         JSON.stringify(formData) === localStorage.getItem(key)
       );
-
       if (!isDuplicate) {
         localStorage.setItem(newConfigKey, JSON.stringify(formData));
         localStorage.setItem('configNumber', configNumber + 1);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Already Exist',
-        });
-      }
+        Swal.fire('Connect successfully');
 
       navigate("/admin/queue"); // Use the navigate function to redirect
-    } else {
+    } 
+  }else {
       // Show Swal message for error
       Swal.fire({
         icon: 'error',
