@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 // react plugin used to create charts
 import { Line, Pie } from "react-chartjs-2";
 import Swal from 'sweetalert2'
+import CryptoJS from 'crypto-js';
 
 // reactstrap components
 import {
@@ -46,12 +47,20 @@ const handleChange = event => {
 const handleSubmit = async (event) => {
   event.preventDefault();
   try {
+
+    const encryptedPassword = CryptoJS.AES.encrypt(
+      formData.rabbitmqPassword, 
+      'your-secret-key'
+    ).toString();
+
     const response = await axios.post('http://localhost:5000/qu/whyyy', {
       rabbitmqHostname: formData.rabbitmqHostname,
       rabbitmqPort: formData.rabbitmqPort,
       rabbitmqUsername: formData.rabbitmqUsername,
-      rabbitmqPassword: formData.rabbitmqPassword,
+      rabbitmqPassword:  formData.rabbitmqPassword, 
     });
+
+    
     if (response.data.status === 'Success') {
       const configNumber = parseInt(localStorage.getItem('configNumber'), 10) || 0;
       const newConfigKey = `rabbitConfig${configNumber + 1}`;
@@ -61,8 +70,19 @@ const handleSubmit = async (event) => {
       const isDuplicate = existingConfigs.some((key) =>
         JSON.stringify(formData) === localStorage.getItem(key)
       );
+    
+      // Encrypt the password before storing in localStorage
+      const encryptedPassword = CryptoJS.AES.encrypt(
+        formData.rabbitmqPassword,
+        'your-secret-key'
+      ).toString();
       if (!isDuplicate) {
-        localStorage.setItem(newConfigKey, JSON.stringify(formData));
+        // Save the encrypted password in the formData object
+        const encryptedFormData = {
+          ...formData,
+          rabbitmqPassword: encryptedPassword,
+        };// Save the encrypted formData in localStorage
+        localStorage.setItem(newConfigKey, JSON.stringify(encryptedFormData));
         localStorage.setItem('configNumber', configNumber + 1);
         Swal.fire('Connect successfully');
 
