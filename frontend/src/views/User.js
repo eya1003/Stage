@@ -20,14 +20,54 @@ const user = JSON.parse(storedUser);
   const [imageUrl, setImageUrl] = useState(user?.imageUrl);
 
 
-   // RabbitMQ configuration states
-   const [rabbitMQHostname, setRabbitMQHostname] = useState('');
-   const [rabbitMQPort, setRabbitMQPort] = useState('');
-   const [rabbitMQUsername, setRabbitMQUsername] = useState('');
-   const [rabbitMQPassword, setRabbitMQPassword] = useState('');
+  const [fileZillaConfigs, setFileZillaConfigs] = useState([]);
+
+  useEffect(() => { 
+    const configs = JSON.parse(localStorage.getItem('NumberedFileZillaConfigs')) || [];
+    setFileZillaConfigs(configs);
+  }, []);
+  
+  const handleFileZillaConfigChange = (index, field, value) => {
+    const updatedConfigs = [...fileZillaConfigs];
+    updatedConfigs[index][field] = value;
+    setFileZillaConfigs(updatedConfigs);
+  };
+  
+  const handleEditFileZillaConfig = (index) => {
+    const updatedConfigs = [...fileZillaConfigs];
+    const editedConfig = updatedConfigs[index];
+  
+    // Check if any changes were made to the configuration
+    const isConfigChanged =
+      editedConfig.host !== fileZillaConfigs[index].host ||
+      editedConfig.port !== fileZillaConfigs[index].port ||
+      editedConfig.user !== fileZillaConfigs[index].user ||
+      editedConfig.password !== fileZillaConfigs[index].password;
+  
+    // Update the configuration in the state array
+    updatedConfigs[index] = editedConfig;
+  
+    // Update the configuration in localStorage
+    try {
+      localStorage.setItem('NumberedFileZillaConfigs', JSON.stringify(updatedConfigs));
+    } catch (error) {
+      console.error('Error updating localStorage:', error);
+    }
+  
+    // Update the state with the edited configuration
+    setFileZillaConfigs(updatedConfigs);
+  
+    // Show success message only if changes were made
+    if (isConfigChanged) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Configuration updated successfully',
+      });
+    }
+  };
+  
+  
  
-   // Editing configuration state
-   const [editingConfigKey, setEditingConfigKey] = useState(null);
   // Function to handle form submission
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -77,7 +117,7 @@ const user = JSON.parse(storedUser);
  // RabbitMQ configurations from localStorage
  const [rabbitConfigs, setRabbitConfigs] = useState([]);
 
- useEffect(() => {
+ useEffect(() => { 
    const configs = [];
    for (let i = 0; i < localStorage.length; i++) {
      const key = localStorage.key(i);
@@ -139,8 +179,6 @@ const handleEditConfig = async (index) => {
   }
 };
 
-
-
 const handleDeleteConfig = (index) => {
   const configKey = rabbitConfigs[index].key;
 
@@ -165,8 +203,6 @@ const handleDeleteConfig = (index) => {
     }
   });
 };
-
-
 
   return (
     <>
@@ -200,17 +236,18 @@ const handleDeleteConfig = (index) => {
             <Card className="card-user">
               <CardHeader>
               <CardTitle
-  tag="h5"
-  style={{
-    color: "#ef8157",
-    fontSize: "24px", // Adjust the font size as needed
-    borderBottom: "2px solid #ef8157", // Add a border at the bottom
-    paddingBottom: "10px", // Add some spacing after the border
-    marginBottom: "20px", // Add overall margin to separate from other content
-  }}
->
-  Edit Profile 
-</CardTitle>              </CardHeader>
+          tag="h5"
+          style={{
+            color: "#ef8157",
+            fontSize: "24px", // Adjust the font size as needed
+            borderBottom: "2px solid #ef8157", // Add a border at the bottom
+            paddingBottom: "10px", // Add some spacing after the border
+            marginBottom: "20px", // Add overall margin to separate from other content
+          }}
+        >
+          Edit Profile 
+        </CardTitle>         
+     </CardHeader>
               <CardBody>
               {msg && <Alert color="success">  <span style={{ fontWeight: 'bold' , fontSize: '14px'}}> {msg}</span> </Alert>}
 
@@ -410,16 +447,106 @@ const handleDeleteConfig = (index) => {
               />
             )}
           </div>
+          
         ))}
+    
+
+
       </CardBody>
     </Card>
+
+
+    <Card className="card-user">
+      <CardHeader>
+        <CardTitle
+          tag="h5"
+          style={{
+            color: "#ef8157",
+            fontSize: "24px", // Adjust the font size as needed
+            borderBottom: "2px solid #ef8157", // Add a border at the bottom
+            paddingBottom: "10px", // Add some spacing after the border
+            marginBottom: "20px", // Add overall margin to separate from other content
+          }}
+        >
+          Manage FileZilla Configurations
+        </CardTitle>
+      </CardHeader>
+
+      <CardBody>
+  {fileZillaConfigs.map((entry, index) => (
+    <div key={index} style={{ marginBottom: "20px" }}>
+      <p
+        style={{
+          fontSize: "16px",
+          color: "#ef8157",
+          fontWeight: "bold",
+          marginTop: "10px",
+          marginBottom: "5px",
+        }}
+      >
+        FileZilla Configuration {entry.index}
+      </p>
+      <Form className="d-flex">
+        <FormGroup className="mr-3">
+          <label>Host</label>
+          <Input
+            type="text"
+            value={entry.host}
+            onChange={(e) =>
+              handleFileZillaConfigChange(index, "host", e.target.value)
+            }
+          />
+        </FormGroup>
+        <FormGroup className="mr-3">
+          <label>Port</label>
+          <Input
+            type="text"
+            value={entry.port}
+            onChange={(e) =>
+              handleFileZillaConfigChange(index, "port", e.target.value)
+            }
+          />
+        </FormGroup>
+        <FormGroup className="mr-3">
+          <label>User</label>
+          <Input
+            type="text"
+            value={entry.user}
+            onChange={(e) =>
+              handleFileZillaConfigChange(index, "user", e.target.value)
+            }
+          />
+        </FormGroup>
+        <FormGroup className="mr-3">
+          <label>Password</label>
+          <Input
+            type="password"
+            value={entry.password}
+            onChange={(e) =>
+              handleFileZillaConfigChange(index, "password", e.target.value)
+            }
+          />
+        </FormGroup>
+        <Button
+          className="btn-round align-self-end"
+          color="primary"
+          onClick={() => handleEditFileZillaConfig(index)}
+        >
+          Save Configuration
+        </Button>
+      </Form>
+    </div>
+  ))}
+</CardBody>
+
+
+
+
+
+  </Card>
   </Col>
-</Row>
-
-
-
-</div>
-
+  </Row>
+  </div>
     </>
   );
 }

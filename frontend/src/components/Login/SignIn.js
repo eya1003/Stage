@@ -80,29 +80,30 @@ function SignInForm() {
       const response = await axios.post("http://localhost:5000/user/login", { email, password });
       const userData = response.data; // This will contain the user data or error message from the backend
       console.log(userData);
-                
-            // Reset the form
-            setState({
-              email: "",
-              password: ""
-            }); 
-            if (!userData){
-              console.log("there is no user")
-            }
+          
+           
             if (userData ) {
               // Save the user data or token in local storage if needed
               localStorage.setItem("userData", JSON.stringify(userData));
               navigate("/admin/dashboard");
 
-              // Navigate to /admin/dashboard
               setTimeout(() => {
                 localStorage.removeItem('userData');
-              }, 240 * 60 * 1000); // 4 hours = 240 minutes * 60 seconds * 1000 milliseconds
-              
+                console.log('User data removed from local storage after 1 hour');
+              }, 60 * 60 * 1000); 
+            }
+            if (!userData){
+              console.log("there is no user")
             }
                 
-              } catch (error) {
-                if (error.response) {
+      } catch (error) {
+         if (error.response) {
+                        
+            // Reset the form
+            setState({
+              email: "",
+              password: ""
+            }); 
                   if (error.response.status === 400) {
                     // Handle different error messages based on the response from the server
                     if (error.response.data.message === 'Please Sign up!') {

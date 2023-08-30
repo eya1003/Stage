@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Swal from 'sweetalert2'
 
 // reactstrap components
@@ -17,46 +17,33 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 function CheckFiles(){
     const [activeSection, setActiveSection] = useState("File Zilla");
-    const [folderPath, setFolderPath] = useState('');
-    const [message, setMessage] = useState('');
 
     const navigate= useNavigate()
-    const checkExist = async () => {
-      try {
-        const ftpConfig = JSON.parse(localStorage.getItem('FileZillaConfig'));
-    
-        if (!ftpConfig) {
-          Swal.fire({
-            icon: 'error',
-            text: 'FTP configuration not found!',
-          });
-          navigate("/fileConfig")
-          console.log('FTP configuration not found in localStorage.');
-        } else {
-          const response = await axios.post('http://localhost:5000/file/checkExist', {
-            ...ftpConfig,
-            folderPath: folderPath,
-          });
-    
-          setMessage(response.data.message);
-          setTimeout(() => {
-            setMessage(null);
-            setFolderPath('');
-          }, 30000);
-    
-          if (response.data.message.includes('does not exist')) {
-            Swal.fire({
-              icon: 'error',
-              text: 'Folder does not exist or connection failed!',
-            });
-          }
+    const [fileZillaConfigs, setFileZillaConfigs] = useState([]);
+
+    useEffect(() => {
+      const configs = JSON.parse(localStorage.getItem('NumberedFileZillaConfigs')) || [];
+      setFileZillaConfigs(configs);
+    }, []);
+
+    const handleChooseConfig = (config) => {
+      // Show a confirmation dialog using Swal
+      Swal.fire({
+        title: 'Choose Configuration',
+        text: 'Are you sure you want to choose this configuration?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, choose it!',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Save the chosen configuration to localStorage
+          localStorage.setItem('chosenFileZilla', JSON.stringify(config));
+          // You can add any other logic you want here
+          Swal.fire('Chosen!', 'The configuration has been chosen.', 'success');
         }
-      } catch (error) {
-        Swal.fire({ 
-          icon: 'error',
-          text: 'Error!',
-        });
-      }
+      });
     };
     
 
@@ -156,27 +143,41 @@ function CheckFiles(){
         <CardBody>
            
         <Row style={{  justifyContent: 'center'}}>
-              <div className="welcome-message" style={{ textAlign: 'center', marginBottom: '20px', marginBottom: '50px' }}>
-            <CardTitle tag="h3" style={{ color: '#666', fontSize: '24px', fontWeight: ' ' }}>
-            Use the input field to check if the folder exists.       
-            </CardTitle>
-            <p style={{ color: '#666', fontSize: '18px' }}>
-            </p>
-          </div>
-                <Col md="8" xs="7">
-                <input
-                    type="text"
-                    placeholder="Folder Path"
-                    value={folderPath}
-                    required
-                    onChange={(e) => setFolderPath(e.target.value)}
-                />
-                <button onClick={checkExist}>Check Folder Existence</button>
-                <Alert color={ "success"} style={{ marginTop: '20px', textAlign: 'left', padding: '10px', borderRadius: '5px', fontWeight: 'bold' }}>
-          {message }
-        </Alert>
+            <div className="welcome-message" style={{ textAlign: 'center' }}>
+    <CardTitle tag="h3" style={{ color: '#51bcda', fontSize: '24px', fontWeight: 'bold', marginLeft:"15px" }}>
+      Stored Configurations
+    </CardTitle>
+  </div>
+  <Col style={{ marginTop: "50px", marginLeft: "-250px", marginRight: "40px" }}>
+      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap' }}>
+        {fileZillaConfigs.map((config, index) => (
+          <li
+            key={index}
+            style={{
+              border: '1px solid #ccc',
+              padding: '20px', // Increase padding for more spacing inside the box
+              marginBottom: '30px', // Increase margin bottom for more spacing between boxes
+              backgroundColor: '#f9f9f9',
+              width: 'calc(50% - 10px)', // Increase the width of the boxes
+              marginRight: index % 2 === 0 ? '20px' : '0', // Add margin to separate boxes
+            }}
+          >
+            <div>
+            <strong>FilleZilla Hostname:</strong> {config.host}<br />
+            <strong>FilleZilla Port:</strong> {config.port}<br />
+            <strong>FilleZilla UserName:</strong> {config.user}<br />
 
-              </Col>
+            </div>
+            <button  onClick={() => handleChooseConfig(config)}
+                  >Choose</button>
+                      
+
+          </li>
+        ))}
+      </ul>
+    </Col>
+
+
          </Row>
         </CardBody>
         </Card>

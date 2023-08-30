@@ -58,7 +58,7 @@ const handleSubmit = async (event) => {
       rabbitmqPort: formData.rabbitmqPort,
       rabbitmqUsername: formData.rabbitmqUsername,
       rabbitmqPassword:  formData.rabbitmqPassword, 
-    });
+    }); 
 
     
     if (response.data.status === 'Success') {
@@ -70,19 +70,8 @@ const handleSubmit = async (event) => {
       const isDuplicate = existingConfigs.some((key) =>
         JSON.stringify(formData) === localStorage.getItem(key)
       );
-    
-      // Encrypt the password before storing in localStorage
-      const encryptedPassword = CryptoJS.AES.encrypt(
-        formData.rabbitmqPassword,
-        'your-secret-key'
-      ).toString();
       if (!isDuplicate) {
-        // Save the encrypted password in the formData object
-        const encryptedFormData = {
-          ...formData,
-          rabbitmqPassword: encryptedPassword,
-        };// Save the encrypted formData in localStorage
-        localStorage.setItem(newConfigKey, JSON.stringify(encryptedFormData));
+        localStorage.setItem(newConfigKey, JSON.stringify(formData));
         localStorage.setItem('configNumber', configNumber + 1);
         Swal.fire('Connect successfully');
 

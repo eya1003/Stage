@@ -39,13 +39,28 @@ function Dashboard() {
     setFTPConfig((prevConfig) => ({ ...prevConfig, [name]: value }));
   };
 
+  const saveNumberedFTPConfig = (config, index) => {
+    const existingConfigs = JSON.parse(localStorage.getItem('NumberedFileZillaConfigs')) || [];
+    const newConfig = {
+      ...config,
+      index: index
+    };
+    existingConfigs.push(newConfig);
+    localStorage.setItem('NumberedFileZillaConfigs', JSON.stringify(existingConfigs));
+    console.log(`FTP configuration ${newConfig.index} saved to localStorage.`);
+  };
+  
   const checkStatus = async () => {
     try {
       const response = await axios.post('http://localhost:5000/file/checkServer', ftpConfig);
-      setStatus(response.data);
+      setStatus(response.data); 
   
-      // Save the FTP configuration in local storage
-      localStorage.setItem('FileZillaConfig', JSON.stringify(ftpConfig));
+      // Determine the index for the new configuration
+      const existingConfigs = JSON.parse(localStorage.getItem('NumberedFileZillaConfigs')) || [];
+      const newIndex = existingConfigs.length + 1;
+  
+      // Save the numbered FTP configuration in local storage
+      saveNumberedFTPConfig(ftpConfig, newIndex);
   
       setTimeout(() => {
         setStatus('');
@@ -55,14 +70,13 @@ function Dashboard() {
           user: '',
           password: '',
         });
-      }, 30000); // 30000 milliseconds = 30 seconds
-
-      
-  // Set a timeout to clear the localStorage after 4 hours (240,000 milliseconds)
-    setTimeout(() => {
-      localStorage.removeItem('FileZillaConfig');
-    }, 240000 * 60); // 240 minutes * 60 seconds per minute * 1000 milliseconds per second
-
+      }, 30000); // 30000 milliseconds = 30 seconds     
+  
+      // Set a timeout to clear the numbered FTP configuration after 4 hours
+      setTimeout(() => {
+        localStorage.removeItem('NumberedFileZillaConfigs');
+      }, 240000 * 60); // 240 minutes * 60 seconds per minute * 1000 milliseconds per second
+  
     } catch (error) {
       setStatus('Failed to check FTP server status');
     }

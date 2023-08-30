@@ -41,12 +41,31 @@ function Dashboard() {
       }
     }
 
+    if (storedConfigs.length === 0) {
+      console.log('No configurations found in localStorage.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Connection Error',
+        text: 'An error occurred. There is no configurations.',
+      });
+      return; // Exit the function since there are no configs to check
+    }
+
     const response = await axios.post('http://localhost:5000/qu/checkConfigs', storedConfigs);
     setFailedConfigs(response.data);
+    // Check if there are no failed configurations
+    if (response.data.length === 0) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'All configurations are correct!',
+      });
+    }
   } catch (error) {
     console.error('Error checking configurations:', error);
   }
 };
+
 
   
 
