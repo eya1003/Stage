@@ -170,7 +170,7 @@ function CheckFiles(){
             </div>
             <button  onClick={() => handleChooseConfig(config)}
                   >Choose</button>
-                      
+                   
 
           </li>
         ))}
@@ -181,7 +181,18 @@ function CheckFiles(){
          </Row>
         </CardBody>
         </Card>
-</Col>
+    </Col>
+
+    <Col lg="8" >
+
+    <Card className="card-stats" >
+    <CardBody>
+    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' , marginBottom: '25px'}}>
+    <button >Check Server</button>
+    </div>
+    </CardBody>
+    </Card>
+    </Col>
         </div>
         </>
     )

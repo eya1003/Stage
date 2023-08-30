@@ -59,19 +59,19 @@ var routes = [
     component: userLoggedIn ? <Email /> : <Navigate to="/login" />, 
     layout: "/admin",
   },
-        {
-          path: "/tables",
-          name: "Users List",
-          icon: "nc-icon nc-tile-56",
-          component: <UsersList />,
-          layout: "/admin",
-        },
   
   {
     path: "/user-page",
     name: "User Profile",
     icon: "nc-icon nc-single-02",
     component: <UserPage />,
+    layout: "/admin",
+  },
+  user?.email === "eya.amor23@gmail.com" && {
+    path: "/tables",
+    name: "Users List",
+    icon: "nc-icon nc-tile-56",
+    component: <UsersList />,
     layout: "/admin",
   },
 ];

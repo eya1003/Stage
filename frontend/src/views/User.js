@@ -33,39 +33,39 @@ const user = JSON.parse(storedUser);
     setFileZillaConfigs(updatedConfigs);
   };
   
-  const handleEditFileZillaConfig = (index) => {
-    const updatedConfigs = [...fileZillaConfigs];
-    const editedConfig = updatedConfigs[index];
-  
-    // Check if any changes were made to the configuration
-    const isConfigChanged =
-      editedConfig.host !== fileZillaConfigs[index].host ||
-      editedConfig.port !== fileZillaConfigs[index].port ||
-      editedConfig.user !== fileZillaConfigs[index].user ||
-      editedConfig.password !== fileZillaConfigs[index].password;
-  
-    // Update the configuration in the state array
-    updatedConfigs[index] = editedConfig;
-  
-    // Update the configuration in localStorage
-    try {
-      localStorage.setItem('NumberedFileZillaConfigs', JSON.stringify(updatedConfigs));
-    } catch (error) {
-      console.error('Error updating localStorage:', error);
-    }
-  
-    // Update the state with the edited configuration
-    setFileZillaConfigs(updatedConfigs);
-  
-    // Show success message only if changes were made
-    if (isConfigChanged) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Configuration updated successfully',
-      });
-    }
-  };
-  
+ const handleEditFileZillaConfig = (index) => {
+  const updatedConfigs = [...fileZillaConfigs];
+  const editedConfig = updatedConfigs[index];
+
+  // Check if any changes were made to the configuration
+  const isConfigChanged =
+    editedConfig.host !== fileZillaConfigs[index].host ||
+    editedConfig.port !== fileZillaConfigs[index].port ||
+    editedConfig.user !== fileZillaConfigs[index].user ||
+    editedConfig.password !== fileZillaConfigs[index].password;
+
+  // Update the configuration in the state array
+  updatedConfigs[index] = editedConfig;
+
+  // Update the configuration in localStorage
+  try {
+    localStorage.setItem('NumberedFileZillaConfigs', JSON.stringify(updatedConfigs));
+  } catch (error) {
+    console.error('Error updating localStorage:', error);
+  }
+
+  // Update the state with the edited configuration
+  setFileZillaConfigs(updatedConfigs);
+
+  // Show success message only if changes were made
+  if (isConfigChanged) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Configuration updated successfully',
+    });
+  }
+};
+
   
  
   // Function to handle form submission
@@ -203,6 +203,22 @@ const handleDeleteConfig = (index) => {
     }
   });
 };
+
+const handleDeleteFileZillaConfig = (index) => {
+  const updatedConfigs = [...fileZillaConfigs];
+  updatedConfigs.splice(index, 1); // Remove the config at the specified index
+  
+  // Update the configuration in the state array
+  setFileZillaConfigs(updatedConfigs);
+
+  // Update the configuration in localStorage
+  try {
+    localStorage.setItem('NumberedFileZillaConfigs', JSON.stringify(updatedConfigs));
+  } catch (error) {
+  alert('Error deleting configuration')  
+}
+};
+
 
   return (
     <>
@@ -487,6 +503,7 @@ const handleDeleteConfig = (index) => {
         FileZilla Configuration {entry.index}
       </p>
       <Form className="d-flex">
+        <Row>
         <FormGroup className="mr-3">
           <label>Host</label>
           <Input
@@ -507,6 +524,8 @@ const handleDeleteConfig = (index) => {
             }
           />
         </FormGroup>
+        </Row>
+        <Row>
         <FormGroup className="mr-3">
           <label>User</label>
           <Input
@@ -527,6 +546,8 @@ const handleDeleteConfig = (index) => {
             }
           />
         </FormGroup>
+        </Row>
+        <div>
         <Button
           className="btn-round align-self-end"
           color="primary"
@@ -534,6 +555,13 @@ const handleDeleteConfig = (index) => {
         >
           Save Configuration
         </Button>
+        <Button
+                className="btn-round" 
+                onClick={() => handleDeleteFileZillaConfig(index)} // Add this function to handle deletion
+                style={{ backgroundColor:"#ef8157"}}>
+                DELETE
+        </Button>             
+        </div>
       </Form>
     </div>
   ))}

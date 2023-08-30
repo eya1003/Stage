@@ -17,12 +17,6 @@ import {
   Button,
   Alert,
 } from "reactstrap";
-// core components
-import {
-  dashboard24HoursPerformanceChart,
-  dashboardEmailStatisticsChart,
-  dashboardNASDAQChart,
-} from "variables/charts.js";
 import axios from "axios"; // Import axios library
 
 function Dashboard() {
@@ -106,32 +100,6 @@ function Dashboard() {
                 <Row>
                   <Col md="4" xs="5">
                     <div className="icon-big text-center icon-warning">
-                      <i className="nc-icon nc-money-coins text-success" />
-                    </div>
-                  </Col>
-                  <Col md="8" xs="7">
-                    <div className="numbers">
-                      <p className="card-category"> +23,000 customers</p>
-                      <CardTitle tag="p">IBM </CardTitle>
-                      <p />
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-              <CardFooter>
-                <hr />
-                <div className="stats">
-                  <i className="far fa-calendar" /> Middleware
-                </div>
-              </CardFooter>
-            </Card>
-          </Col>
-          <Col lg="4" md="4" sm="4">
-            <Card className="card-stats">
-              <CardBody>
-                <Row>
-                  <Col md="4" xs="5">
-                    <div className="icon-big text-center icon-warning">
                       <i className="nc-icon nc-globe text-warning" />
                     </div>
                   </Col>
@@ -162,7 +130,7 @@ function Dashboard() {
     <CardBody>
       <div className="welcome-message" style={{ textAlign: 'center' }}>
         <CardTitle tag="h3" style={{ color: '#51bcda', fontSize: '24px', fontWeight: 'bold', marginLeft: '15px' }}>
-          Check All Configurations
+          Check All RabbitMQ Configurations 
         </CardTitle>
       </div>
 
