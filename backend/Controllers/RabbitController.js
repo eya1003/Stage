@@ -633,6 +633,10 @@ const testRabbitMQServer = async (req,res) => {
 const checkAllConfig = async (req, res) => {
   const rabbitConfigs = req.body;
 
+  if (!rabbitConfigs || rabbitConfigs.length === 0) {
+    console.log("no configurations")
+  }
+
   const failedConfigs = [];
 
   for (const [index, config] of rabbitConfigs.entries()) {
@@ -652,6 +656,7 @@ const checkAllConfig = async (req, res) => {
 
   res.json(failedConfigs);
 };
+
 
 
 
