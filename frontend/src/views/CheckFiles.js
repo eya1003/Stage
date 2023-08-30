@@ -16,6 +16,33 @@ import {
 import axios from "axios"; 
 import { useNavigate } from "react-router-dom";
 function CheckFiles(){
+
+
+  const [fileList, setFileList] = useState([]);
+  const [summary, setSummary] = useState({ numFiles: 0, numFolders: 0 });
+  const [loading, setLoading] = useState(false);
+
+  const chosenFileZilla = JSON.parse(localStorage.getItem('chosenFileZilla'));
+
+  const handleGetFileList = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/file/getFile', {
+        host: chosenFileZilla.host,
+        port: chosenFileZilla.port,
+        user: chosenFileZilla.user,
+        password: chosenFileZilla.password,
+      });
+
+      const { fileList, summary } = response.data;
+      setFileList(fileList);
+      setSummary(summary);
+    } catch (error) {
+      console.error('Error getting file list:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
     const [activeSection, setActiveSection] = useState("File Zilla");
 
     const navigate= useNavigate()
@@ -181,18 +208,62 @@ function CheckFiles(){
          </Row>
         </CardBody>
         </Card>
-    </Col>
+</Col>
 
-    <Col lg="8" >
+<Col lg="8" >
 
-    <Card className="card-stats" >
-    <CardBody>
-    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' , marginBottom: '25px'}}>
-    <button >Check Server</button>
-    </div>
-    </CardBody>
-    </Card>
-    </Col>
+<Card className="card-stats" >
+<CardBody>
+  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom: '25px' }}>
+    <button onClick={handleGetFileList} disabled={loading}>
+      {loading ? 'Loading...' : 'Check Server'}
+    </button>
+  </div>
+
+ 
+  <div>
+  <table className="queue-info-table">
+    <thead>
+      <tr>
+        <th className="colored-header">Number of Files</th>
+        <th className="colored-header">Number of Folders</th>
+        <th className="colored-header">File Names</th>
+        <th className="colored-header">Folder Names</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{summary.numFiles}</td>
+        <td>{summary.numFolders}</td>
+        <td>
+          <ul>
+            {fileList.map((item, index) => (
+              item.startsWith('[FILE]') && (
+                <li key={index}>{item.replace('[FILE] ', '')}</li>
+              )
+            ))}
+          </ul>
+        </td>
+        <td>
+          <ul>
+            {fileList.map((item, index) => (
+              item.startsWith('[DIR]') && (
+                <li key={index}>{item.replace('[DIR] ', '')}</li>
+              )
+            ))}
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+
+
+</CardBody> 
+</Card>
+</Col>
         </div>
         </>
     )
