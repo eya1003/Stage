@@ -6,6 +6,55 @@ const ftp1 = require('ftp')
 const fs = require('fs');
 
 
+
+const getFileZilla = async (req, res) => {
+  const { host, port, user, password } = req.body;
+
+  const client = new ftp.Client();
+  client.ftp.verbose = true; // Set to true if you want to see debug logs
+
+  try {
+    await client.access({
+      host,
+      port,
+      user,
+      password,
+      secure: false, // Set to true if you want to use FTP over TLS
+    });
+
+    const list = await client.list('/');
+    
+    let numFiles = 0;
+    let numFolders = 0;
+
+    const fileList = list.map((item) => {
+      if (item.isDirectory) {
+        numFolders++;
+        return `[DIR] ${item.name}`;
+      } else {
+        numFiles++;
+        return `[FILE] ${item.name}`;
+      }
+    });
+
+    const summary = {
+      numFiles,
+      numFolders,
+    };
+
+    res.status(200).json({ fileList, summary });
+  } catch (err) {
+    console.error('Error listing files and folders:', err);
+    res.status(500).send('Error retrieving files and folders');
+  } finally {
+    client.close();
+  }
+};
+
+module.exports = getFileZilla;
+
+
+
 // Function to check if the FTP server is up
 const checkFTPServerStatus = async (req, res) => {
   try {
@@ -70,6 +119,32 @@ const checkFTPConnection = async (req, res) => {
   });
 };
 
+const checkFileZillaConfigs = async (req, res) => {
+  const configs = req.body; // Assuming req.body.configurations is an array of configs
+  const failedConfigs = [];
+
+  for (const config of configs) {
+    const { host, port, user, password } = config;
+
+    try {
+      // Attempt to connect to the FTP server using axios or any other suitable method
+      const response = await axios.get(`ftp://${user}:${password}@${host}:${port}`);
+      
+      if (response.status !== 200) {
+        failedConfigs.push(config);
+      }
+    } catch (error) {
+      failedConfigs.push(config);
+    }
+  }
+
+  // Send the list of failed configurations in the response
+  res.json({ failedConfigs });
+};
+
+
 module.exports = { checkFTPServerStatus ,
-  checkFTPConnection
+  checkFTPConnection,
+  checkFileZillaConfigs,
+  getFileZilla
 };
