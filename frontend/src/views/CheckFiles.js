@@ -10,17 +10,24 @@ import {
   CardTitle,
   Row,
   Col,
-  Button,
   Alert,
+  FormGroup,
+  Input,
+  Button,
+  Form
 } from "reactstrap";
 import axios from "axios"; 
-import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent } from "@material-ui/core";
+
 function CheckFiles(){
 
-
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [selectedConfigIndex, setSelectedConfigIndex] = useState(null);
+  
   const [fileList, setFileList] = useState([]);
   const [summary, setSummary] = useState({ numFiles: 0, numFolders: 0 });
   const [loading, setLoading] = useState(false);
+
 
   const chosenFileZilla = JSON.parse(localStorage.getItem('chosenFileZilla'));
 
@@ -45,8 +52,7 @@ function CheckFiles(){
   };
     const [activeSection, setActiveSection] = useState("File Zilla");
 
-    const navigate= useNavigate()
-    const [fileZillaConfigs, setFileZillaConfigs] = useState([]);
+  const [fileZillaConfigs, setFileZillaConfigs] = useState([]);
 
     useEffect(() => {
       const configs = JSON.parse(localStorage.getItem('NumberedFileZillaConfigs')) || [];
@@ -72,7 +78,64 @@ function CheckFiles(){
         }
       });
     };
+
+    const handleDeleteFileZillaConfig = (index) => {
+      const updatedConfigs = [...fileZillaConfigs];
+      updatedConfigs.splice(index, 1); // Remove the config at the specified index
+      
+      // Update the configuration in the state array
+      setFileZillaConfigs(updatedConfigs);
     
+      // Update the configuration in localStorage
+      try {
+        localStorage.setItem('NumberedFileZillaConfigs', JSON.stringify(updatedConfigs));
+      } catch (error) {
+      alert('Error deleting configuration')  
+    }
+    };
+    
+    
+  const handleFileZillaConfigChange = (index, field, value) => {
+    const updatedConfigs = [...fileZillaConfigs];
+    updatedConfigs[index][field] = value;
+    setFileZillaConfigs(updatedConfigs);
+  };
+  
+ const handleEditFileZillaConfig = (index) => {
+  const updatedConfigs = [...fileZillaConfigs];
+  const editedConfig = updatedConfigs[index];
+
+  // Check if any changes were made to the configuration
+  const isConfigChanged =
+    editedConfig.host !== fileZillaConfigs[index].host ||
+    editedConfig.port !== fileZillaConfigs[index].port ||
+    editedConfig.user !== fileZillaConfigs[index].user ||
+    editedConfig.password !== fileZillaConfigs[index].password;
+
+  // Update the configuration in the state array
+  updatedConfigs[index] = editedConfig;
+
+  // Update the configuration in localStorage
+  try {
+    localStorage.setItem('NumberedFileZillaConfigs', JSON.stringify(updatedConfigs));
+  } catch (error) {
+    console.error('Error updating localStorage:', error);
+  }
+
+  // Update the state with the edited configuration
+  setFileZillaConfigs(updatedConfigs);
+
+  // Show success message only if changes were made
+  if (isConfigChanged) {
+    Swal.fire({
+      icon: 'success',
+      title: 'Configuration updated successfully',
+    });
+  }
+  setShowUpdateDialog(false);
+
+};
+
 
     return(
         <>
@@ -176,42 +239,170 @@ function CheckFiles(){
     </CardTitle>
   </div>
   <Col style={{ marginTop: "50px", marginLeft: "-250px", marginRight: "40px" }}>
-      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap' }}>
-        {fileZillaConfigs.map((config, index) => (
-          <li
-            key={index}
-            style={{
-              border: '1px solid #ccc',
-              padding: '20px', // Increase padding for more spacing inside the box
-              marginBottom: '30px', // Increase margin bottom for more spacing between boxes
-              backgroundColor: '#f9f9f9',
-              width: 'calc(50% - 10px)', // Increase the width of the boxes
-              marginRight: index % 2 === 0 ? '20px' : '0', // Add margin to separate boxes
-            }}
+  <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap' }}>
+  {fileZillaConfigs.map((config, index) => (
+  <li
+    key={index}
+    style={{
+      border: '1px solid #ccc',
+      padding: '20px',
+      marginBottom: '30px',
+      backgroundColor: '#f9f9f9',
+      width: 'calc(50% - 10px)',
+      marginRight: index % 2 === 0 ? '20px' : '0',
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <div>
+      <strong>FileZilla Hostname:</strong> {config.host}<br />
+      <strong>FileZilla Port:</strong> {config.port}<br />
+      <strong>FileZilla UserName:</strong> {config.user}<br />
+    </div>
+    <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+      <button
+        onClick={() => handleChooseConfig(config)}
+        style={{
+          fontSize: '12px',
+          padding: '5px 10px',
+        }}
+      >
+        Choose
+      </button>
+      <button
+        onClick={() => {
+          Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              handleDeleteFileZillaConfig(index);
+              Swal.fire(
+                'Deleted!',
+                'Your configuration has been deleted.',
+                'success'
+              )
+            }
+          })
+        }}
+        style={{
+          backgroundColor: "#ef8157",
+          fontSize: '12px',
+          padding: '5px 10px',
+        }}
+      >
+        Delete
+      </button>
+      <button
+  onClick={() => {
+    setSelectedConfigIndex(index);
+    setShowUpdateDialog(true);
+  }}
+      style={{
+          backgroundColor: "#ef8157",
+          fontSize: '12px',
+          padding: '5px 10px',
+        }}
+      >
+        Update
+      </button>
+
+      <Dialog style={{ backgroundColor: ''}}
+      
+  open={showUpdateDialog}
+  onClose={() => setShowUpdateDialog(false)}
+>
+  <DialogContent>
+    {selectedConfigIndex !== null && (
+      <Form>
+                <h3 style={{ marginBottom: '10px', fontSize: '18px', fontWeight: 'bold', color: '#ef8157' }}> FileZilla Configuration</h3>
+                <hr style={{ width: '100%', height: '0.5px', backgroundColor: '#ef8157', margin: '10px 0' }} />
+
+        <Row>
+          <FormGroup className="mr-3">
+            <label>Host</label>
+            <Input
+              type="text"
+              value={fileZillaConfigs[selectedConfigIndex].host}
+              onChange={(e) =>
+                handleFileZillaConfigChange(selectedConfigIndex, "host", e.target.value)
+              }
+            />
+          </FormGroup>
+          <FormGroup className="mr-3">
+            <label>Port</label>
+            <Input
+              type="text"
+              value={fileZillaConfigs[selectedConfigIndex].port}
+              onChange={(e) =>
+                handleFileZillaConfigChange(selectedConfigIndex, "port", e.target.value)
+              }
+            />
+          </FormGroup>
+        </Row>
+        <Row>
+          <FormGroup className="mr-3">
+            <label>User</label>
+            <Input
+              type="text"
+              value={fileZillaConfigs[selectedConfigIndex].user}
+              onChange={(e) =>
+                handleFileZillaConfigChange(selectedConfigIndex, "user", e.target.value)
+              }
+            />
+          </FormGroup>
+          <FormGroup className="mr-3">
+            <label>Password</label>
+            <Input
+              type="password"
+              value={fileZillaConfigs[selectedConfigIndex].password}
+              onChange={(e) =>
+                handleFileZillaConfigChange(selectedConfigIndex, "password", e.target.value)
+              }
+            />
+          </FormGroup>
+        </Row>
+        <div>
+          <Button
+            className="btn-round align-self-end"
+            color="primary"
+            onClick={() => handleEditFileZillaConfig(selectedConfigIndex)}
           >
-            <div>
-            <strong>FilleZilla Hostname:</strong> {config.host}<br />
-            <strong>FilleZilla Port:</strong> {config.port}<br />
-            <strong>FilleZilla UserName:</strong> {config.user}<br />
+            Save Configuration
+          </Button>
+          <Button
+            className="btn-round"
+            onClick={() => setShowUpdateDialog(false)}
+            style={{ backgroundColor: "#ef8157" }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </Form>
+    )}
+  </DialogContent>
+</Dialog>
 
-            </div>
-            <button  onClick={() => handleChooseConfig(config)}
-                  >Choose</button>
-                   
 
-          </li>
-        ))}
-      </ul>
-    </Col>
+    </div>
+  </li>
+  
+))}
 
+</ul>
 
-         </Row>
-        </CardBody>
-        </Card>
+</Col>
+ </Row>
+   </CardBody>
+      </Card>
 </Col>
 
 <Col lg="8" >
-
 <Card className="card-stats" >
 <CardBody>
   <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom: '25px' }}>
@@ -220,7 +411,6 @@ function CheckFiles(){
     </button>
   </div>
 
- 
   <div>
   <table className="queue-info-table">
     <thead>
@@ -257,10 +447,6 @@ function CheckFiles(){
     </tbody>
   </table>
 </div>
-
-
-
-
 </CardBody> 
 </Card>
 </Col>
