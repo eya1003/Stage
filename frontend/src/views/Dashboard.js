@@ -220,31 +220,30 @@ function Dashboard() {
 </div>
 
 <Row style={{ display: 'flex', justifyContent: 'center'}}>
-<Col lg="4" style={{ marginRight:"20px"}}>
-        <Card className="card-chart">
-         
-          <CardBody>
-            <div className="chart-area">
-              <Bar data={barChartData} options={barChartOptions} />
-            </div>
-          </CardBody>
-        
-        </Card>
-      </Col>
- <Col lg="4" md="4" sm="4">
-                  <Card className="card-stats">
-                    <CardBody>
-                      <Pie data={successData} options={options} />
-                    </CardBody>
-                    <CardFooter>
-                      <div className="stats">
-                        <i className="fas fa-sync-alt" /> Success Rate
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </Col>
- </Row>
-         
+  <Col lg="4" style={{ marginRight:"20px"}}>
+    <Card className="card-chart" style={{ border: '1px solid #ccc', borderRadius: '10px' }}>
+      <CardBody>
+        <div className="chart-area">
+          <Bar data={barChartData} options={barChartOptions} />
+        </div>
+      </CardBody>
+    </Card>
+  </Col>
+  <Col lg="4" md="4" sm="4">
+    <Card className="card-stats" style={{ border: '1px solid #ccc', borderRadius: '10px' }}>
+      <CardBody>
+        <Pie data={successData} options={options} />
+      </CardBody>
+      <CardFooter>
+        <div className="stats">
+          <i className="fas fa-sync-alt" /> Success Rate
+        </div>
+      </CardFooter>
+    </Card>
+  </Col>
+</Row>
+
+
     </CardBody>
   </Card>
 </Col>
