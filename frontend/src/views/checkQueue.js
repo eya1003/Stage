@@ -351,6 +351,9 @@ const handleChooseConfig = (config) => {
   <DialogContent>
     {selectedConfigIndex !== null && (
       <Form>
+         <h3 style={{ marginBottom: '10px', fontSize: '18px', fontWeight: 'bold', color: '#ef8157' }}> RabbitMQ Configuration</h3>
+                <hr style={{ width: '100%', height: '0.5px', backgroundColor: '#ef8157', margin: '10px 0' }} />
+
         <Row>
           <FormGroup className="mr-3">
             <label>RabbitMQ Hostname</label>

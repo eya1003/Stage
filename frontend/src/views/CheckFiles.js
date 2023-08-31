@@ -135,6 +135,31 @@ function CheckFiles(){
   setShowUpdateDialog(false);
 
 };
+const handleCheckConfig = async (config) => {
+  try {
+    const response = await axios.post('http://localhost:5000/file/checkServer', config.data);
+
+    // Handle the response as needed
+    console.log(response.data); // For example, log the response data
+
+    // Display success message
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: 'FileZilla configuration check successful!',
+    });
+  } catch (error) {
+    // Handle errors
+    console.error('An error occurred:', error);
+
+    // Display error message
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An error occurred while checking the FileZilla configuration.',
+    });
+  }
+};
 
 
     return(
@@ -269,6 +294,16 @@ function CheckFiles(){
       >
         Choose
       </button>
+      <button
+        onClick={() => handleCheckConfig(config)}
+        style={{
+          fontSize: '12px',
+          padding: '5px 10px',
+        }}
+      >
+        Check
+      </button>
+     
       <button
         onClick={() => {
           Swal.fire({
