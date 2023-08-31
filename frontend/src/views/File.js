@@ -214,19 +214,19 @@ function Dashboard() {
             <h2>FTP Server Status Checker</h2>
       <div>
         <label>Host:</label>
-        <input type="text" name="host" placeholder="127.0.0.1" value={ftpConfig.host} onChange={handleInputChange} />
+        <input type="text"  required name="host" placeholder="127.0.0.1" value={ftpConfig.host} onChange={handleInputChange} />
       </div>
       <div>
         <label>Port:</label>
-        <input type="text" name="port" value={ftpConfig.port} onChange={handleInputChange} />
+        <input type="text" required name="port" value={ftpConfig.port} onChange={handleInputChange} />
       </div>
       <div>
         <label>User:</label>
-        <input type="text" name="user" value={ftpConfig.user} onChange={handleInputChange} />
+        <input type="text" required name="user" value={ftpConfig.user} onChange={handleInputChange} />
       </div>
       <div>
         <label>Password:</label>
-        <input type="password" name="password" value={ftpConfig.password} onChange={handleInputChange} />
+        <input type="password"  required name="password" value={ftpConfig.password} onChange={handleInputChange} />
       </div>
       <button onClick={checkStatus}>Check Status</button>
                 

@@ -69,7 +69,7 @@ const user = JSON.parse(storedUser);
     <>
       <div className="content">
         <Row>
-        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex' }}>
 
           <Col md="4">
             <Card className="card-user">
@@ -125,13 +125,27 @@ const user = JSON.parse(storedUser);
                         />
                       </FormGroup>
                     </Col>
-                   
-                   
-                  </Row>
+                   </Row>
+                   <Row>
+                    <Col className="pr-1" md="29">
+                      <FormGroup>
+                      <label>Email</label>
+                      <Input
+  value={user?.email}
+  disabled
+  placeholder="Email"
+  type="email"
+  style={{ width: '100%', height: '50px'}}
+/>
+
+                      </FormGroup>
+                    </Col>
+                   </Row>
+
                   <Row>
                     <Col className="pr-1" md="6">
                       <FormGroup>
-                        <label>First Name</label>
+                        <label>First Name</label> 
                         <Input
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}

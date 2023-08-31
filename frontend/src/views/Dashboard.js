@@ -3,6 +3,7 @@ import React, { useState } from "react";
 // react plugin used to create charts
 import { Line, Pie } from "react-chartjs-2";
 import Swal from 'sweetalert2'
+import { Bar } from "react-chartjs-2";
 
 // reactstrap components
 import {
@@ -13,55 +14,116 @@ import {
   CardTitle,
   Row,
   Col,
-  Input,
-  Button,
-  Alert,
 } from "reactstrap";
 import axios from "axios"; // Import axios library
 
 function Dashboard() {
+  const [failedConfigs, setFailedConfigs] = useState([]);
+  const [storedConfigs, setStoredConfigs] = useState([]); // Add this line
 
-
- const [failedConfigs, setFailedConfigs] = useState([]);
-
- const handleCheckConfigs = async () => {
-  try {
-    const storedConfigs = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith('rabbitConfig')) {
-        const config = JSON.parse(localStorage.getItem(key));
-        storedConfigs.push(config);
+  const handleCheckConfigs = async () => {
+    try {
+      const tempStoredConfigs = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('rabbitConfig')) {
+          const config = JSON.parse(localStorage.getItem(key));
+          tempStoredConfigs.push(config);
+        }
       }
+
+      if (tempStoredConfigs.length === 0) {
+        console.log('No configurations found in localStorage.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Connection Error',
+          text: 'An error occurred. There is no configurations.',
+        });
+        return;
+      }
+
+      setStoredConfigs(tempStoredConfigs); // Set storedConfigs
+      const response = await axios.post('http://localhost:5000/qu/checkConfigs', tempStoredConfigs);
+      setFailedConfigs(response.data);
+
+      // Check if there are no failed configurations
+      if (response.data.length === 0) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'All configurations are correct!',
+        });
+      }
+    } catch (error) {
+      console.error('Error checking configurations:', error);
     }
+  };
 
-    if (storedConfigs.length === 0) {
-      console.log('No configurations found in localStorage.');
-      Swal.fire({
-        icon: 'error',
-        title: 'Connection Error',
-        text: 'An error occurred. There is no configurations.',
-      });
-      return; // Exit the function since there are no configs to check
-    }
+  // Calculate success and failure rates here
+  const totalConfigs = failedConfigs.length + (storedConfigs.length - failedConfigs.length);
+  const successRate = (totalConfigs - failedConfigs.length) / totalConfigs;
+  const failureRate = failedConfigs.length / totalConfigs;
 
-    const response = await axios.post('http://localhost:5000/qu/checkConfigs', storedConfigs);
-    setFailedConfigs(response.data);
-    // Check if there are no failed configurations
-    if (response.data.length === 0) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: 'All configurations are correct!',
-      });
-    }
-  } catch (error) {
-    console.error('Error checking configurations:', error);
-  }
-};
+  // Define pie chart data and options here
+  const successData = {
+    labels: ["Success", "Failure"],
+    datasets: [
+      {
+        data: [successRate * 100, failureRate * 100],
+        backgroundColor: ["green", "orange"],
+      },
+    ],
+  };
 
 
-  
+  const options = {
+    maintainAspectRatio: false,
+    responsive: true,
+    legend: {
+      display: true,
+      position: "bottom",
+    },
+  };
+  const barChartData = {
+    labels: ["Success Rate", "Failure Rate"],
+    datasets: [
+      {
+        label: "Percentage",
+        backgroundColor: ["green", "orange"],
+        borderColor: "rgba(0,0,0,0.2)",
+        borderWidth: 1,
+        hoverBackgroundColor: ["green", "orange"],
+        hoverBorderColor: "rgba(0,0,0,0.4)",
+        data: [successRate * 100, failureRate * 100],
+      },
+    ],
+  };
+
+  const barChartOptions = {
+    maintainAspectRatio: false,
+    responsive: true,
+    legend: {
+      display: false,
+    },
+    scales: {
+      xAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      ],
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      ],
+    },
+  };
+
+
 
   return (
     <>
@@ -155,14 +217,38 @@ function Dashboard() {
     </li>
   ))}
 </ul>
-
 </div>
 
-
+<Row style={{ display: 'flex', justifyContent: 'center'}}>
+<Col lg="4" style={{ marginRight:"20px"}}>
+        <Card className="card-chart">
+         
+          <CardBody>
+            <div className="chart-area">
+              <Bar data={barChartData} options={barChartOptions} />
+            </div>
+          </CardBody>
+        
+        </Card>
+      </Col>
+ <Col lg="4" md="4" sm="4">
+                  <Card className="card-stats">
+                    <CardBody>
+                      <Pie data={successData} options={options} />
+                    </CardBody>
+                    <CardFooter>
+                      <div className="stats">
+                        <i className="fas fa-sync-alt" /> Success Rate
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </Col>
+ </Row>
+         
     </CardBody>
   </Card>
 </Col>
-   
+
 </div>
       </div>
     </>
