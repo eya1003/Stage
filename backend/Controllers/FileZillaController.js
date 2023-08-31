@@ -117,20 +117,29 @@ const checkFTPConnection = async (req, res) => {
 };
 
 const checkFileZillaConfigs = async (req, res) => {
-  const configs = req.body; // Assuming req.body.configurations is an array of configs
+  const configs = req.body; // Assuming req.body is an array of configurations
   const failedConfigs = [];
 
   for (const config of configs) {
     const { host, port, user, password } = config;
 
     try {
-      // Attempt to connect to the FTP server using axios or any other suitable method
-      const response = await axios.get(`ftp://${user}:${password}@${host}:${port}`);
-      
-      if (response.status !== 200) {
-        failedConfigs.push(config);
-      }
+      // Attempt to connect to the FTP server using the basic-ftp library
+      const client = new ftp.Client();
+      client.ftp.verbose = true;
+
+      await client.access({
+        host,
+        port,
+        user,
+        password,
+        secure: false, // Set to true if using FTP over TLS
+      });
+
+      // Connection succeeded, close the client
+      client.close();
     } catch (error) {
+      // Connection failed, add the configuration to the list of failed configs
       failedConfigs.push(config);
     }
   }
