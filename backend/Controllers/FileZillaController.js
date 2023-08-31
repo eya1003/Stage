@@ -5,7 +5,7 @@ const ftp = require('basic-ftp');
 const ftp1 = require('ftp')
 const fs = require('fs');
 
-
+const axios = require('axios');
 
 const getFileZilla = async (req, res) => {
   const { host, port, user, password } = req.body;
@@ -50,9 +50,6 @@ const getFileZilla = async (req, res) => {
     client.close();
   }
 };
-
-module.exports = getFileZilla;
-
 
 
 // Function to check if the FTP server is up

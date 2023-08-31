@@ -12,8 +12,13 @@ import {
     Col,
     Input,
     Alert,
+    Form,
+    Button,
+    FormGroup
     
   } from "reactstrap";
+  import { Dialog, DialogContent } from "@material-ui/core";
+
 import { useNavigate } from "react-router-dom";
 
 import Swal from "sweetalert2";
@@ -21,13 +26,16 @@ import Swal from "sweetalert2";
 
 function CheckQueue (){
 
+  const [selectedConfigIndex, setSelectedConfigIndex] = useState(null);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 
     const [error, setError] = useState('');
     const [activeSection, setActiveSection] = useState("Rabbit MQ");
     const navigate = useNavigate(); // Initialize useNavigate
     const [Res, setRes] = useState(false);
 
-  
+    const [rabbitConfigs, setRabbitConfigs] = useState([]);
+
     const [configurations, setConfigurations] = useState([]);
 
   useEffect(() => {
@@ -41,7 +49,30 @@ function CheckQueue (){
     setConfigurations(configData);
   }, []);
 
+  const handleFieldChange = (index, field, value) => {
+    const updatedConfigs = [...configurations];
+    updatedConfigs[index].data[field] = value;
+    setConfigurations(updatedConfigs);
+  };
+  
+  const handleEditConfig = (index) => {
+    if (index !== null) {
+      const updatedConfigs = [...configurations];
+      const configKey = updatedConfigs[index].key;
+  
+      // Update the configuration data in localStorage
+      const storedConfig = JSON.parse(localStorage.getItem(configKey)) || {};
+      const updatedStoredConfig = { ...storedConfig, ...updatedConfigs[index].data };
+      localStorage.setItem(configKey, JSON.stringify(updatedStoredConfig));
+  
+      setShowUpdateDialog(false);
+      setSelectedConfigIndex(null);
+    }
+  };
+  
+  
 
+  
   const QueueInformationTable = async () => {
     try {
       const storedConfig = JSON.parse(localStorage.getItem('chosenConfig'));
@@ -110,9 +141,25 @@ const handleChooseConfig = (config) => {
           }
         });
       };
-      
-      
+     
 
+      const handleDeleteConfig = (key) => {
+        const updatedConfigs = configurations.filter(config => config.key !== key);
+        setConfigurations(updatedConfigs);
+      
+        // Remove the configuration from localStorage
+        const storedConfigs = JSON.parse(localStorage.getItem('configurations')) || [];
+        const updatedStoredConfigs = storedConfigs.filter(config => config.key !== key);
+        localStorage.setItem('configurations', JSON.stringify(updatedStoredConfigs));
+      
+        // Remove the specific entry for rabbitConfigX from localStorage
+        const rabbitConfigNumber = key.replace('rabbitConfig', '');
+        localStorage.removeItem(`rabbitConfig${rabbitConfigNumber}`);
+      };
+      
+       
+  
+      
      return (
         <>
 <div className="content" style={{ width: "1500px" }}>
@@ -220,31 +267,135 @@ const handleChooseConfig = (config) => {
   </div>
 
   <Col  style={{ marginTop: "50px", marginLeft: "-250px" ,marginRight:"40px"}}>
-  <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap' }}>
-    {configurations.map((config, index) => (
-      <li
-        key={config.key}
-        style={{
-          border: '1px solid #ccc',
-          padding: '20px', // Increase padding for more spacing inside the box
-          marginBottom: '30px', // Increase margin bottom for more spacing between boxes
-          backgroundColor: '#f9f9f9',
-          width: 'calc(50% - 10px)', // Increase the width of the boxes
-          marginRight: index % 2 === 0 ? '20px' : '0', // Add margin to separate boxes
-        }}
-      >
-        <strong>RabbitMQ Hostname:</strong> {config.data.rabbitmqHostname}<br />
-        <strong>RabbitMQ Port:</strong> {config.data.rabbitmqPort}<br />
-        <strong>RabbitMQ Username:</strong> {config.data.rabbitmqUsername}<br />
-        {/* You can add more fields here */}
+    <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap' }}>
+      {configurations.map((config, index) => (
+        <li
+          key={config.key}
+          style={{
+            border: '1px solid #ccc',
+            padding: '20px', // Increase padding for more spacing inside the box
+            marginBottom: '30px', // Increase margin bottom for more spacing between boxes
+            backgroundColor: '#f9f9f9',
+            width: 'calc(50% - 10px)', // Increase the width of the boxes
+            marginRight: index % 2 === 0 ? '20px' : '0', // Add margin to separate boxes
+          }}
+        >
+          <strong>RabbitMQ Hostname:</strong> {config.data.rabbitmqHostname}<br />
+          <strong>RabbitMQ Port:</strong> {config.data.rabbitmqPort}<br />
+          <strong>RabbitMQ Username:</strong> {config.data.rabbitmqUsername}<br />
+          {/* You can add more fields here */}
+    
+                        <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
         <button
-                  onClick={() => handleChooseConfig(config)}
-                  >Choose</button>
-                      
+          onClick={() => handleChooseConfig(config)}
+          style={{
+            fontSize: '12px',
+            padding: '5px 10px',
+          }}
+        >
+          Choose
+        </button>
+        <button
+            onClick={() => handleDeleteConfig(config.key)} // Pass the key
+  style={{
+    backgroundColor: "#ef8157",
+    fontSize: '12px',
+    padding: '5px 10px',
+  }}
+>
+  Delete
+</button>
+        <button
+    onClick={() => {
+      setSelectedConfigIndex(index);
+      setShowUpdateDialog(true);
+    }}
+        style={{
+            backgroundColor: "#ef8157",
+            fontSize: '12px',
+            padding: '5px 10px',
+          }}
+        >
+          Update
+        </button> 
+  </div>
+  <Dialog
+  open={showUpdateDialog}
+  onClose={() => setShowUpdateDialog(false)}
+>
+  <DialogContent>
+    {selectedConfigIndex !== null && (
+      <Form>
+        <Row>
+          <FormGroup className="mr-3">
+            <label>RabbitMQ Hostname</label>
+            <Input
+              type="text"
+              value={configurations[selectedConfigIndex].data.rabbitmqHostname}
+              onChange={(e) =>
+                handleFieldChange(selectedConfigIndex, 'rabbitmqHostname', e.target.value)
+              }
+            />
+          </FormGroup>
+          <FormGroup className="mr-3">
+            <label>RabbitMQ Port</label>
+            <Input
+              type="text"
+              value={configurations[selectedConfigIndex].data.rabbitmqPort}
+              onChange={(e) =>
+                handleFieldChange(selectedConfigIndex, 'rabbitmqPort', e.target.value)
+              }
+            />
+          </FormGroup>
+        </Row>
+        <Row>
+          <FormGroup className="mr-3">
+            <label>RabbitMQ Username</label>
+            <Input
+              type="text"
+              value={configurations[selectedConfigIndex].data.rabbitmqUsername}
+              onChange={(e) =>
+                handleFieldChange(selectedConfigIndex, 'rabbitmqUsername', e.target.value)
+              }
+            />
+          </FormGroup>
+          <FormGroup className="mr-3">
+            <label>RabbitMQ Password</label>
+            <Input
+              type="password"
+              value={configurations[selectedConfigIndex].data.rabbitmqPassword}
+              onChange={(e) =>
+                handleFieldChange(selectedConfigIndex, 'rabbitmqPassword', e.target.value)
+              }
+            />
+          </FormGroup>
+          {/* Add more input fields for other properties */}
+        </Row>
 
-      </li>
-    ))}
-  </ul>
+        <div>
+          <Button
+            className="btn-round align-self-end"
+            color="primary"
+            onClick={() => handleEditConfig(selectedConfigIndex)}
+          >
+            Save Configuration
+          </Button>
+          <Button
+            className="btn-round"
+            onClick={() => setShowUpdateDialog(false)}
+            style={{ backgroundColor: "#ef8157" }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </Form>
+    )}
+  </DialogContent>
+</Dialog>
+
+        </li>
+      ))}
+    </ul>
 </Col>
 
 
