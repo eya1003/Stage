@@ -70,9 +70,6 @@ function CheckQueue (){
     }
   };
   
-  
-
-  
   const QueueInformationTable = async () => {
     try {
       const storedConfig = JSON.parse(localStorage.getItem('chosenConfig'));
@@ -142,7 +139,6 @@ const handleChooseConfig = (config) => {
         });
       };
      
-
       const handleDeleteConfig = (key) => {
         const updatedConfigs = configurations.filter(config => config.key !== key);
         setConfigurations(updatedConfigs);
@@ -156,10 +152,29 @@ const handleChooseConfig = (config) => {
         const rabbitConfigNumber = key.replace('rabbitConfig', '');
         localStorage.removeItem(`rabbitConfig${rabbitConfigNumber}`);
       };
-      
-       
-  
-      
+      const sendConfigData = async (configData) => {
+        try {
+          const response = await axios.post('http://localhost:5000/qu/whyyy', configData);
+          // Handle the response as needed
+          console.log(response.data); // For example, log the response data
+          if (response.data.status === 'Success') {
+            Swal.fire({
+              icon: 'success',
+      title: 'Success',
+      text: 'Configuration check successful!',
+    })
+          }else {
+            Swal.fire({
+              title: "Error",
+              text: "Stored configuration has problem",
+              icon: "error",
+                })
+          }
+        } catch (error) {
+          // Handle errors
+          console.error('An error occurred:', error);
+        }
+      };        
      return (
         <>
 <div className="content" style={{ width: "1500px" }}>
@@ -294,6 +309,16 @@ const handleChooseConfig = (config) => {
           }}
         >
           Choose
+        </button>
+        <button
+                      onClick={() => sendConfigData(config.data)}
+
+          style={{
+            fontSize: '12px',
+            padding: '5px 10px',
+          }}
+        >
+          Check
         </button>
         <button
             onClick={() => handleDeleteConfig(config.key)} // Pass the key
