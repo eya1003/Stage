@@ -70,7 +70,7 @@ function Dashboard() {
     datasets: [
       {
         data: [successRate * 100, failureRate * 100],
-        backgroundColor: ["green", "orange"],
+        backgroundColor: ["#6bd098", "#ef8157"],
       },
     ],
   };
@@ -89,10 +89,10 @@ function Dashboard() {
     datasets: [
       {
         label: "Percentage",
-        backgroundColor: ["green", "orange"],
+        backgroundColor: ["#6bd098", "#ef8157"],
         borderColor: "rgba(0,0,0,0.2)",
         borderWidth: 1,
-        hoverBackgroundColor: ["green", "orange"],
+        hoverBackgroundColor: ["#6bd098", "#ef8157"],
         hoverBorderColor: "rgba(0,0,0,0.4)",
         data: [successRate * 100, failureRate * 100],
       },
@@ -123,11 +123,8 @@ function Dashboard() {
     },
   };
 
-
-
   return (
     <>
-
       <div className="content"  >
         <Row >
           <Col lg="4" md="4" sm="4">
@@ -191,7 +188,7 @@ function Dashboard() {
   <Card className="card-stats">
     <CardBody>
       <div className="welcome-message" style={{ textAlign: 'center' }}>
-        <CardTitle tag="h3" style={{ color: '#51bcda', fontSize: '24px', fontWeight: 'bold', marginLeft: '15px' }}>
+        <CardTitle tag="h3" style={{ color: '#ef8157', fontSize: '24px', fontWeight: 'bold', marginLeft: '15px' }}>
           Check All RabbitMQ Configurations 
         </CardTitle>
       </div>
