@@ -19,6 +19,7 @@ import axios from "axios"; // Import axios library
 
 function Dashboard() {
   const [failedConfigs, setFailedConfigs] = useState([]);
+  const [failedFile, setFailedFile] = useState([]);
   const [storedConfigs, setStoredConfigs] = useState([]); // Add this line
 
   const handleCheckConfigs = async () => {
@@ -75,7 +76,6 @@ function Dashboard() {
     ],
   };
 
-
   const options = {
     maintainAspectRatio: false,
     responsive: true,
@@ -121,6 +121,25 @@ function Dashboard() {
         },
       ],
     },
+  };
+
+  const handleTestConfigs = async () => {
+    try {
+      const localStorageConfigs = JSON.parse(localStorage.getItem("NumberedFileZillaConfigs"));
+
+      if (!localStorageConfigs || localStorageConfigs.length === 0) {
+        console.log("No configurations found in localStorage.");
+        return;
+      }
+
+      // Replace with the actual API endpoint URL
+      const apiUrl = "http://localhost:5000/file/checkAllConfig";
+
+      const response = await axios.post(apiUrl, localStorageConfigs);
+      setFailedFile(response.data.failedConfigs);
+    } catch (error) {
+      console.error("Error testing configurations:", error);
+    }
   };
 
   return (
@@ -239,6 +258,51 @@ function Dashboard() {
     </Card>
   </Col>
 </Row>
+
+
+    </CardBody>
+  </Card>
+</Col>
+
+{/*  File zilla part */}
+
+<Col lg="8">
+  <Card className="card-stats">
+    <CardBody>
+      <div className="welcome-message" style={{ textAlign: 'center' }}>
+        <CardTitle tag="h3" style={{ color: '#ef8157', fontSize: '24px', fontWeight: 'bold', marginLeft: '15px' }}>
+          Check All FileZilla Configurations 
+        </CardTitle>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', marginBottom: '25px' }}>
+        <button onClick={handleTestConfigs}>Check Config</button>
+      </div>
+
+      <div>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+  {failedFile.map((failedFile, index) => (
+    <li key={index} style={{ marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>
+      <h4 style={{ color: '#FF5733', marginBottom: '5px', fontWeight: 'bold' }}>Failed Configuration:</h4>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5', padding: '5px', borderRadius: '5px' }}>
+          Host: {failedFile.host}
+        </span>
+      </p>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold' }}>Port: {failedFile.port}</span>
+      </p>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold' }}>Username: {failedFile.user}</span>
+      </p>
+      <p style={{ marginBottom: '5px' }}>
+        <span style={{ fontWeight: 'bold' }}>Password: {failedFile.password}</span>
+      </p>
+    </li>
+  ))}
+</ul>
+
+</div>
 
 
     </CardBody>
