@@ -2,7 +2,7 @@
 # for frontend 
 open terminal 
 cd frontend
-npm install --force 
+npm install  ---legacy-peer-deps 
 # for backend 
 open terminal 
 npm install --force 
