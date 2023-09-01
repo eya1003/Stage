@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 // react plugin used to create charts
 import { Line, Pie } from "react-chartjs-2";
 import Swal from 'sweetalert2'
-import CryptoJS from 'crypto-js';
 
 // reactstrap components
 import {
@@ -47,11 +46,6 @@ const handleChange = event => {
 const handleSubmit = async (event) => {
   event.preventDefault();
   try {
-
-    const encryptedPassword = CryptoJS.AES.encrypt(
-      formData.rabbitmqPassword, 
-      'your-secret-key'
-    ).toString();
 
     const response = await axios.post('http://localhost:5000/qu/whyyy', {
       rabbitmqHostname: formData.rabbitmqHostname,

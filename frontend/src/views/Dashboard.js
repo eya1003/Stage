@@ -21,6 +21,8 @@ function Dashboard() {
   const [failedConfigs, setFailedConfigs] = useState([]);
   const [failedFile, setFailedFile] = useState([]);
   const [storedConfigs, setStoredConfigs] = useState([]); // Add this line
+const [storedFileZillaConfigs, setStoredFileZillaConfigs] = useState([]); // Add this line
+
 
   const handleCheckConfigs = async () => {
     try {
@@ -123,25 +125,52 @@ function Dashboard() {
     },
   };
 
+  // Calculate success and failure rates for FileZilla
+const totalFileZillaConfigs = failedFile.length + (storedFileZillaConfigs.length - failedFile.length);
+const successRateFileZilla = (totalFileZillaConfigs - failedFile.length) / totalFileZillaConfigs;
+const failureRateFileZilla = failedFile.length / totalFileZillaConfigs;
+
+// Define pie chart data and options for FileZilla
+const fileZillaSuccessData = {
+  labels: ["Success", "Failure"],
+  datasets: [
+    {
+      data: [successRateFileZilla * 100, failureRateFileZilla * 100],
+      backgroundColor: ["#6bd098", "#ef8157"],
+    },
+  ],
+};
+
+const fileZillaOptions = {
+  maintainAspectRatio: false,
+  responsive: true,
+  legend: {
+    display: true,
+    position: "bottom",
+  },
+};
+
   const handleTestConfigs = async () => {
     try {
       const localStorageConfigs = JSON.parse(localStorage.getItem("NumberedFileZillaConfigs"));
-
+  
       if (!localStorageConfigs || localStorageConfigs.length === 0) {
         console.log("No configurations found in localStorage.");
         return;
       }
-
+  
+      setStoredFileZillaConfigs(localStorageConfigs); // Set storedFileZillaConfigs
+  
       // Replace with the actual API endpoint URL
       const apiUrl = "http://localhost:5000/file/checkAllConfig";
-
+  
       const response = await axios.post(apiUrl, localStorageConfigs);
       setFailedFile(response.data.failedConfigs);
     } catch (error) {
       console.error("Error testing configurations:", error);
     }
   };
-
+  
   return (
     <>
       <div className="content"  >
@@ -280,29 +309,57 @@ function Dashboard() {
       </div>
 
       <div>
+      <Row style={{ display: 'flex', justifyContent: 'center' }}>
+  <Col lg="4" style={{ marginRight: '20px' }}>
+    <Card className="card-chart" style={{ border: '1px solid #ccc', borderRadius: '10px' }}>
+      <CardBody>
+        <div className="chart-area">
+          {/* Use the FileZilla chart data and options here */}
+          <Bar data={fileZillaSuccessData} options={fileZillaOptions} />
+        </div>
+      </CardBody>
+    </Card>
+  </Col>
+  <Col lg="4" md="4" sm="4">
+    <Card className="card-stats" style={{ border: '1px solid #ccc', borderRadius: '10px' }}>
+      <CardBody>
+        <Pie data={fileZillaSuccessData} options={fileZillaOptions} />
+      </CardBody>
+      <CardFooter>
+        <div className="stats">
+          <i className="fas fa-sync-alt" /> FileZilla Success Rate
+        </div>
+      </CardFooter>
+    </Card>
+  </Col>
+</Row>
       <ul style={{ listStyle: 'none', padding: 0 }}>
   {failedFile.map((failedFile, index) => (
     <li key={index} style={{ marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>
       <h4 style={{ color: '#FF5733', marginBottom: '5px', fontWeight: 'bold' }}>Failed Configuration:</h4>
       <p style={{ marginBottom: '5px' }}>
         <span style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5', padding: '5px', borderRadius: '5px' }}>
-          Host: {failedFile.host}
+        FileZilla Host:
         </span>
+        {failedFile.host}
       </p>
       <p style={{ marginBottom: '5px' }}>
-        <span style={{ fontWeight: 'bold' }}>Port: {failedFile.port}</span>
+        <span style={{ fontWeight: 'bold' }}>FileZilla Port: </span> {failedFile.port}
       </p>
       <p style={{ marginBottom: '5px' }}>
-        <span style={{ fontWeight: 'bold' }}>Username: {failedFile.user}</span>
+        <span style={{ fontWeight: 'bold' }}>FileZilla Username:</span>  {failedFile.user}
       </p>
       <p style={{ marginBottom: '5px' }}>
-        <span style={{ fontWeight: 'bold' }}>Password: {failedFile.password}</span>
+        <span style={{ fontWeight: 'bold' }}>FileZilla Password: </span> {failedFile.password}
       </p>
     </li>
   ))}
 </ul>
 
 </div>
+
+
+
 
 
     </CardBody>
